@@ -1,12 +1,10 @@
 {
-  "homepage": "https://adnankurniawann.github.io/web-portofolio",
   "name": "adnan-identity",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predeploy": "npm run build",
-    "dev": "gh-pages -d dist",
+    "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

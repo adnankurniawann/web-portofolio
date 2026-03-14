@@ -42,7 +42,7 @@ const Navbar = () => {
         </li>
         <li>
           <a href="#proyek" className="sm:text-lg text-base font-small">
-            Project
+            Experience
           </a>
         </li>
         <li>

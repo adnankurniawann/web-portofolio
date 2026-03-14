@@ -5,7 +5,7 @@ const Footer = () => {
       <div className="flex gap-7">
         <a href="#beranda">Home</a>
         <a href="#tentang">About</a>
-        <a href="#proyek">Projects</a>
+        <a href="#proyek">Experience</a>
       </div>
       <div className="flex items-center gap-3">
         <a href="https://github.com/adnankurniawann">

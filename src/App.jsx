@@ -20,16 +20,11 @@ function App() {
           </div>
           <div className="flex items-center sm:gap-4 gap-2">
             <a
-              href="#"
+              href="/CV_Muhammad Adnan Kurniawan.pdf"
+              download="CV_Muhammad Adnan Kurniawan.pdf"
               className="bg-blue-800 p-4 rounded-2xl hover:bg-blue-600"
             >
               Download CV
-            </a>
-            <a
-              href="#proyek"
-              className="bg-zinc-700 p-4 rounded-2xl hover:bg-zinc-600"
-            >
-              My Project
             </a>
           </div>
         </div>
@@ -64,28 +59,6 @@ function App() {
             Looking ahead, I aim to become a tech professional who transforms
             data into strategic innovation.
           </p>
-          <div className="flex items-center justify-between">
-            <img
-              src={DataImage.HeroImage}
-              alt="Image"
-              className="w-12 rounded-md sm:block hidden"
-              loading="lazy"
-            />
-            <div className="flex items-center gap-6">
-              <div>
-                <h1 className="text-4xl mb-1">
-                  4 <span className="text-blue-700">+</span>
-                </h1>
-                <p>Projects Completed</p>
-              </div>
-              <div>
-                <h1 className="text-4xl mb-1">
-                  2 <span className="text-blue-700">+</span>
-                </h1>
-                <p>Years Experience</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="tools mt-32">
@@ -141,7 +114,7 @@ function App() {
           data-aos-duration="1000"
           data-aos-once="true"
         >
-          Projects
+          Experience
         </h1>
         <p
           className="text-base/loose text-center opacity-50"
@@ -150,7 +123,7 @@ function App() {
           data-aos-delay="300"
           data-aos-once="true"
         >
-          Here are some projects that I have made.
+          Here are some professional experience that I have gained.
         </p>
         <div className="proyek-box mt-14 grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
           {listProyek.map((proyek) => (
@@ -175,14 +148,6 @@ function App() {
                       {tool}
                     </p>
                   ))}
-                </div>
-                <div className="mt-8 text-center">
-                  <a
-                    href="#"
-                    className="bg-blue-800 p-3 rounded-md block-border border-zinc-600 hover:bg-blue-900"
-                  >
-                    Lihat Website
-                  </a>
                 </div>
               </div>
             </div>
