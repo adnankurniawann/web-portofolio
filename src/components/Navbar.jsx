@@ -1,57 +1,102 @@
 import { useState, useEffect } from "react";
 
 const Navbar = () => {
-  const [active, setActive] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
+  // Efek pintar untuk deteksi scroll naik/turun
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 150) {
-        setActive(true);
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        // Kalau di paling atas, selalu muncul
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY) {
+        // Scroll ke bawah -> Hilang / Naik
+        setIsVisible(false);
       } else {
-        setActive(false);
+        // Scroll ke atas -> Muncul / Turun
+        setIsVisible(true);
       }
+
+      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+  const navLinks = [
+    { name: "Home", href: "#beranda" },
+    { name: "About", href: "#tentang" },
+    { name: "Experience", href: "#proyek" },
+    { name: "Contact", href: "#kontak" },
+  ];
 
   return (
-    <div className="navbar py-7 flex items-center justify-between">
-      <div className="logo">
-        <h1
-          className="text-3xl font-bold text-blue-600"
+    <header 
+      // Desain pil kaca di tengah dengan ruang di kiri-kanan
+      className={`fixed left-1/2 w-[calc(100%-2rem)] max-w-6xl z-50 transition-all duration-500 ease-in-out ${
+        isVisible ? "top-4 -translate-x-1/2 opacity-100" : "-top-24 -translate-x-1/2 opacity-0"
+      }`}
+    >
+      <div className="flex items-center justify-between rounded-full px-5 py-3 md:px-8 bg-blue-950/80 backdrop-blur-xl border border-blue-700/50 shadow-lg">
+        
+        {/* Teks logo yang ukurannya pas */}
+        <a 
+          href="#" 
+          className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300"
         >
           @adnankurniawann
-        </h1>
+        </a>
+
+        {/* Menu Desktop */}
+        <ul className="hidden md:flex items-center gap-6 lg:gap-8">
+          {navLinks.map((link, index) => (
+            <li key={index}>
+              <a 
+                href={link.href} 
+                className="text-blue-100 hover:text-white text-sm font-medium transition-colors relative group"
+              >
+                {link.name}
+                <span className="absolute -bottom-1.5 left-0 w-0 h-[2px] bg-blue-400 transition-all duration-300 group-hover:w-full rounded-full"></span>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tombol Hamburger untuk Mobile */}
+        <button 
+          className="md:hidden text-blue-200 hover:text-white text-2xl transition-colors focus:outline-none"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          <i className={isMenuOpen ? "ri-close-line" : "ri-menu-3-line"}></i>
+        </button>
       </div>
-      <ul
-        className={`menu flex items-center sm:gap-10 gap-4 md:static fixed left-1/2 -translate-x-1/2 md:translate-x-0 md:opacity-100 bg-blue-950/50 backdrop-blur-md p-4 rounded-br-2xl rounded-bl-2xl md:bg-transparent transition-all md:transition-none z-40 ${active ? "top-0 opacity-100" : "-top-20 opaccity-0"}`}
+
+      {/* Menu Dropdown Mobile */}
+      <div 
+        className={`md:hidden absolute top-full left-0 right-0 mt-3 rounded-2xl bg-blue-950/90 backdrop-blur-xl border border-blue-800/50 shadow-2xl transition-all duration-400 transform origin-top ${
+          isMenuOpen ? "scale-y-100 opacity-100 visible" : "scale-y-95 opacity-0 invisible"
+        }`}
       >
-        <li>
-          <a href="#beranda" className="sm:text-lg text-base font-small">
-            Home
-          </a>
-        </li>
-        <li>
-          <a href="#tentang" className="sm:text-lg text-base font-small">
-            About
-          </a>
-        </li>
-        <li>
-          <a href="#proyek" className="sm:text-lg text-base font-small">
-            Experience
-          </a>
-        </li>
-        <li>
-          <a href="#kontak" className="sm:text-lg text-base font-small">
-            Contact
-          </a>
-        </li>
-      </ul>
-    </div>
+        <ul className="flex flex-col p-2">
+          {navLinks.map((link, index) => (
+            <li key={index}>
+              <a 
+                href={link.href} 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-center text-blue-100 hover:text-white hover:bg-blue-900/50 py-4 rounded-xl text-lg font-medium transition-all duration-300"
+              >
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </header>
   );
 };
 

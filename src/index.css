@@ -3,5 +3,39 @@
 @layer base {
   body {
     font-family: "Poppins", sans-serif;
+    background-color: transparent !important;
   }
+  
+  #root {
+    background-color: transparent !important;
+  }
+}
+
+.typing-text {
+  width: 0; 
+  /* Durasi total 7 detik agar ada waktu jeda yang lama dan enak dibaca */
+  animation: typing-loop 7s steps(43, end) infinite, blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing-loop {
+  0%, 10% { width: 0; }             /* Diam di awal */
+  45%, 85% { width: 100%; }         /* Selesai ngetik & Diam lama buat dibaca */
+  100% { width: 0; }                /* Cepat menghapus & Ulangi */
+}
+
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: white;
+  }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
