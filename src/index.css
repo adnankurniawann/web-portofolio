@@ -4,23 +4,31 @@
   body {
     font-family: "Poppins", sans-serif;
     background-color: transparent !important;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Mencegah layar bisa di-scroll ke samping */
   }
   
+  /* === HAPUS BATASAN BAWAAN VITE DI SINI === */
   #root {
     background-color: transparent !important;
+    max-width: 100% !important; 
+    padding: 0 !important; 
+    margin: 0 !important;
+    width: 100%;
   }
 }
 
+/* Animasi Ketik CSS Murni Loop & Delay */
 .typing-text {
   width: 0; 
-  /* Durasi total 7 detik agar ada waktu jeda yang lama dan enak dibaca */
   animation: typing-loop 7s steps(43, end) infinite, blink-caret 0.75s step-end infinite;
 }
 
 @keyframes typing-loop {
-  0%, 10% { width: 0; }             /* Diam di awal */
-  45%, 85% { width: 100%; }         /* Selesai ngetik & Diam lama buat dibaca */
-  100% { width: 0; }                /* Cepat menghapus & Ulangi */
+  0%, 10% { width: 0; }
+  45%, 85% { width: 100%; }
+  100% { width: 0; }
 }
 
 @keyframes blink-caret {
@@ -32,10 +40,21 @@
   }
 }
 
+/* Sembunyikan Scrollbar untuk efek Timeline Horizontal */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Animasi Ganti-ganti Teks (Rotate Text) */
+.animate-text-rotate {
+  animation: fadeEffect 3s infinite;
+}
+
+@keyframes fadeEffect {
+  0%, 100% { opacity: 0; transform: translateY(10px); }
+  20%, 80% { opacity: 1; transform: translateY(0); }
 }

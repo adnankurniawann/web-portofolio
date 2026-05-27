@@ -9,9 +9,11 @@ const PreLoader = () => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
+  
   return (
     loading && (
-      <div className="w-screen h-screen fixed flex items-center justify-center bg-black z-50">
+      // UBAH DI SINI: Ganti z-50 menjadi z-[9999]
+      <div className="w-screen h-screen fixed flex items-center justify-center bg-black z-[9999]">
         <div role="status">
           <svg
             aria-hidden="true"

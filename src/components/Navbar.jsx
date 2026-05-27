@@ -5,19 +5,15 @@ const Navbar = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Efek pintar untuk deteksi scroll naik/turun
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY < 50) {
-        // Kalau di paling atas, selalu muncul
         setIsVisible(true);
       } else if (currentScrollY > lastScrollY) {
-        // Scroll ke bawah -> Hilang / Naik
         setIsVisible(false);
       } else {
-        // Scroll ke atas -> Muncul / Turun
         setIsVisible(true);
       }
 
@@ -28,23 +24,23 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  // UPDATE: Tambah menu Projects dan sesuaikan ID link-nya
   const navLinks = [
     { name: "Home", href: "#beranda" },
     { name: "About", href: "#tentang" },
-    { name: "Experience", href: "#proyek" },
+    { name: "Experience", href: "#experience" },
+    { name: "Projects", href: "#projects" },
     { name: "Contact", href: "#kontak" },
   ];
 
   return (
     <header 
-      // Desain pil kaca di tengah dengan ruang di kiri-kanan
       className={`fixed left-1/2 w-[calc(100%-2rem)] max-w-6xl z-50 transition-all duration-500 ease-in-out ${
         isVisible ? "top-4 -translate-x-1/2 opacity-100" : "-top-24 -translate-x-1/2 opacity-0"
       }`}
     >
       <div className="flex items-center justify-between rounded-full px-5 py-3 md:px-8 bg-blue-950/80 backdrop-blur-xl border border-blue-700/50 shadow-lg">
         
-        {/* Teks logo yang ukurannya pas */}
         <a 
           href="#" 
           className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300"
@@ -52,7 +48,6 @@ const Navbar = () => {
           @adnankurniawann
         </a>
 
-        {/* Menu Desktop */}
         <ul className="hidden md:flex items-center gap-6 lg:gap-8">
           {navLinks.map((link, index) => (
             <li key={index}>
@@ -67,7 +62,6 @@ const Navbar = () => {
           ))}
         </ul>
 
-        {/* Tombol Hamburger untuk Mobile */}
         <button 
           className="md:hidden text-blue-200 hover:text-white text-2xl transition-colors focus:outline-none"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -76,7 +70,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Menu Dropdown Mobile */}
       <div 
         className={`md:hidden absolute top-full left-0 right-0 mt-3 rounded-2xl bg-blue-950/90 backdrop-blur-xl border border-blue-800/50 shadow-2xl transition-all duration-400 transform origin-top ${
           isMenuOpen ? "scale-y-100 opacity-100 visible" : "scale-y-95 opacity-0 invisible"
@@ -88,7 +81,7 @@ const Navbar = () => {
               <a 
                 href={link.href} 
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-center text-blue-100 hover:text-white hover:bg-blue-900/50 py-4 rounded-xl text-lg font-medium transition-all duration-300"
+                className="block text-center text-blue-100 hover:text-white hover:bg-blue-900/50 py-3 rounded-xl text-base font-medium transition-all duration-300"
               >
                 {link.name}
               </a>
