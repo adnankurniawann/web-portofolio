@@ -35,7 +35,6 @@ function App() {
     }
   };
 
-  // ... (biarkan experienceList & projectList tetap sama seperti sebelumnya) ...
   const experienceList = [
     {
       id: 1,
@@ -96,6 +95,7 @@ function App() {
     <>
       <ParticlesBackground />
       <div className="relative z-10">
+        {/* === HERO SECTION === */}
         <div
           className="hero grid md:grid-cols-2 items-center pt-28 lg:pt-32 gap-12 max-w-5xl mx-auto grid-cols-1 overflow-hidden px-4 md:px-6"
           id="beranda"
@@ -138,11 +138,11 @@ function App() {
 
           <img
             src={DataImage.HeroImage}
+            alt="Hero"
             className="w-[200px] sm:w-[260px] md:w-[300px] lg:w-[380px] aspect-square object-cover mx-auto md:mr-auto rounded-3xl shadow-[0_0_30px_rgba(37,99,235,0.3)] border-4 border-blue-400/50 order-1 md:order-2"
           />
         </div>
 
-        {/* ... (About, Tools, Experience, Projects, Contact tetap sama) ... */}
         {/* === ABOUT SECTION === */}
         <div className="tentang mt-24 md:mt-32 py-10" id="tentang">
           <div className="max-w-7xl mx-auto px-4">
@@ -200,6 +200,50 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* === TOOLS SECTION === */}
+        <div className="tools mt-24 md:mt-32 overflow-hidden max-w-6xl mx-auto px-4">
+          <h1
+            className="text-3xl md:text-4xl/snug font-bold mb-3 md:mb-4 text-white"
+            data-aos="fade-right"
+          >
+            Tools Used
+          </h1>
+          <p
+            className="w-full text-sm md:text-base/loose text-blue-200 opacity-80"
+            data-aos="fade-right"
+            data-aos-delay="200"
+          >
+            Here are some tools that I usually use to create websites, design,
+            and process data.
+          </p>
+
+          <div className="tools-box mt-10 md:mt-14 grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 md:gap-5">
+            {listTools.map((tool) => (
+              <div
+                className="flex items-center gap-3 p-3 md:p-4 bg-blue-950/40 backdrop-blur-sm border border-blue-800/40 rounded-xl hover:bg-blue-800/60 hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(37,99,235,0.2)] transition-all duration-300 group cursor-pointer"
+                key={tool.id}
+                data-aos="zoom-in"
+                data-aos-delay={tool.dad}
+              >
+                <img
+                  src={tool.gambar}
+                  alt="Tools Image"
+                  className="w-10 md:w-14 bg-white/10 p-2 rounded-lg group-hover:bg-white/20 transition-colors"
+                />
+                <div>
+                  <h4 className="font-bold text-sm md:text-base text-gray-100">
+                    {tool.nama}
+                  </h4>
+                  <p className="text-xs md:text-sm text-gray-400">
+                    {tool.ket}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* === EXPERIENCE SECTION === */}
         <div
           className="proyek mt-24 md:mt-32 py-10 overflow-hidden"
