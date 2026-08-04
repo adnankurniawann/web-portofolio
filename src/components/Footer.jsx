@@ -1,57 +1,60 @@
-const Footer = () => {
+import { VIEWS, SOCIALS } from "../content";
+
+const glow = {
+  GitHub: "hover:drop-shadow-[0_0_10px_rgb(255_255_255/0.5)]",
+  LinkedIn: "hover:drop-shadow-[0_0_10px_rgb(59_130_246/0.8)]",
+  Instagram: "hover:drop-shadow-[0_0_10px_rgb(236_72_153/0.8)]",
+};
+
+const Footer = ({ onNavigate }) => {
   return (
-    // Tambahkan w-full agar background merentang ujung ke ujung layar
-    <footer className="w-full mt-24 border-t border-blue-800/50 bg-blue-950/40 backdrop-blur-xl">
-      
-      {/* Container utama (max-w-7xl) agar isi footer tetap rapi sejajar di tengah */}
-      <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-8 justify-between items-center">
-        
-        {/* Logo/Nama disamakan dengan gaya Navbar */}
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform duration-300">
+    <footer className="relative z-10 w-full border-t border-blue-500/20 bg-blue-950/30 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-5 py-8 md:flex-row md:justify-between md:px-8">
+        <button
+          type="button"
+          onClick={() => onNavigate("home")}
+          className="gradient-text font-display text-lg font-bold transition-transform duration-300 hover:scale-105"
+        >
           @adnankurniawann
-        </h1>
-        
-        {/* Menu Navigasi */}
-        <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-blue-200 font-medium">
-          <a href="#beranda" className="hover:text-white hover:-translate-y-1 transition-all duration-300">Home</a>
-          <a href="#tentang" className="hover:text-white hover:-translate-y-1 transition-all duration-300">About</a>
-          <a href="#proyek" className="hover:text-white hover:-translate-y-1 transition-all duration-300">Experience</a>
-        </div>
-        
-        {/* Ikon Sosial Media dengan efek Hover Menyala */}
-        <div className="flex items-center gap-6 text-blue-300">
-          <a 
-            href="https://github.com/adnankurniawann" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-white hover:-translate-y-1 hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-300"
-          >
-            <i className="ri-github-fill ri-2x"></i>
-          </a>
-          <a 
-            href="https://www.linkedin.com/in/adnankurniawan/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-white hover:-translate-y-1 hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.8)] transition-all duration-300"
-          >
-            <i className="ri-linkedin-fill ri-2x"></i>
-          </a>
-          <a 
-            href="https://www.instagram.com/adnankurniawann/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-white hover:-translate-y-1 hover:drop-shadow-[0_0_10px_rgba(236,72,153,0.8)] transition-all duration-300"
-          >
-            <i className="ri-instagram-fill ri-2x"></i>
-          </a>
+        </button>
+
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium text-blue-200/80">
+            {VIEWS.map((v) => (
+              <li key={v.id}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(v.id)}
+                  className="transition-colors duration-300 hover:text-white"
+                >
+                  {v.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="flex items-center gap-1">
+          {SOCIALS.map((s) => (
+            <a
+              key={s.label}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={s.label}
+              title={s.label}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl text-blue-300 transition-all duration-300 hover:-translate-y-1 hover:bg-blue-500/10 hover:text-white ${glow[s.label] ?? ""}`}
+            >
+              <i className={s.icon} aria-hidden="true" />
+            </a>
+          ))}
         </div>
       </div>
 
-      {/* Copyright Line */}
-      <div className="border-t border-blue-800/30 py-6 text-center text-sm text-blue-400/60 font-medium tracking-wide w-full">
-        &copy; {new Date().getFullYear()} Muhammad Adnan Kurniawan. All rights reserved.
+      <div className="w-full border-t border-blue-500/10 py-5 text-center text-xs font-medium tracking-wide text-blue-300/50">
+        &copy; {new Date().getFullYear()} Muhammad Adnan Kurniawan. All rights
+        reserved.
       </div>
-      
     </footer>
   );
 };

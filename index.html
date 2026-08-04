@@ -2,19 +2,42 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#020617" />
+
+    <title>Muhammad Adnan Kurniawan — Informatics @ ITB</title>
+    <meta
+      name="description"
+      content="Portfolio of Muhammad Adnan Kurniawan, Informatics student at Institut Teknologi Bandung focused on AI, machine learning, and data-driven products."
+    />
+    <meta name="author" content="Muhammad Adnan Kurniawan" />
+
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Muhammad Adnan Kurniawan — Informatics @ ITB"
+    />
+    <meta
+      property="og:description"
+      content="AI, machine learning, and data-driven products. Informatics student at Institut Teknologi Bandung."
+    />
+    <meta property="og:image" content="/assets/hero-img.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
-    <title>Adnan's Website</title>
+    <link rel="preload" as="image" href="/assets/hero-img.webp" />
   </head>
-  <body class="bg-gradient-to-br from-zinc-950 via-zinc-850 to-blue-950 text-white min-h-screen" id="beranda">
+  <!-- NOTE: #beranda lives on the hero <section>, not here. Duplicating it
+       on <body> makes getElementById resolve to a full-page-height element
+       and breaks the navbar scroll spy. -->
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

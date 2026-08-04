@@ -1,90 +1,116 @@
 import { useState, useEffect } from "react";
+import { VIEWS } from "../content";
 
-const Navbar = () => {
+/**
+ * Primary navigation. Since sections are pages rather than scroll targets,
+ * this bar stays pinned at all times — hiding it would leave no way to move
+ * between sections.
+ */
+const Navbar = ({ current, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
+  // Close the mobile sheet on Escape, and whenever the view changes.
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+    if (!isMenuOpen) return;
+    const onKey = (e) => e.key === "Escape" && setIsMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isMenuOpen]);
 
-      if (currentScrollY < 50) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
-  // UPDATE: Tambah menu Projects dan sesuaikan ID link-nya
-  const navLinks = [
-    { name: "Home", href: "#beranda" },
-    { name: "About", href: "#tentang" },
-    { name: "Experience", href: "#experience" },
-    { name: "Projects", href: "#projects" },
-    { name: "Contact", href: "#kontak" },
-  ];
+  // Note: every menu entry routes through go(), which closes the sheet —
+  // so there is no need to mirror `current` back into state here.
+  const go = (id) => {
+    setIsMenuOpen(false);
+    onNavigate(id);
+  };
 
   return (
-    <header 
-      className={`fixed left-1/2 w-[calc(100%-2rem)] max-w-6xl z-50 transition-all duration-500 ease-in-out ${
-        isVisible ? "top-4 -translate-x-1/2 opacity-100" : "-top-24 -translate-x-1/2 opacity-0"
-      }`}
-    >
-      <div className="flex items-center justify-between rounded-full px-5 py-3 md:px-8 bg-blue-950/80 backdrop-blur-xl border border-blue-700/50 shadow-lg">
-        
-        <a 
-          href="#" 
-          className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300"
+    <header className="fixed top-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2">
+      <nav
+        aria-label="Primary"
+        className="glass-strong flex items-center justify-between rounded-full px-4 py-2.5 shadow-[0_8px_32px_-8px_rgb(2_6_23/0.8)] md:px-6"
+      >
+        <button
+          type="button"
+          onClick={() => go("home")}
+          className="gradient-text font-display text-base font-bold tracking-tight transition-transform duration-300 hover:scale-105 md:text-lg"
         >
           @adnankurniawann
-        </a>
+        </button>
 
-        <ul className="hidden md:flex items-center gap-6 lg:gap-8">
-          {navLinks.map((link, index) => (
-            <li key={index}>
-              <a 
-                href={link.href} 
-                className="text-blue-100 hover:text-white text-sm font-medium transition-colors relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1.5 left-0 w-0 h-[2px] bg-blue-400 transition-all duration-300 group-hover:w-full rounded-full"></span>
-              </a>
-            </li>
-          ))}
+        <ul className="hidden items-center gap-1 md:flex">
+          {VIEWS.map((v) => {
+            const isActive = current === v.id;
+            return (
+              <li key={v.id}>
+                <button
+                  type="button"
+                  onClick={() => go(v.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`relative block rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300 lg:px-4 ${
+                    isActive ? "text-white" : "text-blue-200/70 hover:text-white"
+                  }`}
+                >
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 rounded-full border border-blue-400/40 bg-blue-500/15"
+                    />
+                  )}
+                  <span className="relative">{v.label}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
 
-        <button 
-          className="md:hidden text-blue-200 hover:text-white text-2xl transition-colors focus:outline-none"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        <button
+          type="button"
+          onClick={() => go("contact")}
+          className="hidden rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-500 md:inline-block"
         >
-          <i className={isMenuOpen ? "ri-close-line" : "ri-menu-3-line"}></i>
+          Let's talk
         </button>
-      </div>
 
-      <div 
-        className={`md:hidden absolute top-full left-0 right-0 mt-3 rounded-2xl bg-blue-950/90 backdrop-blur-xl border border-blue-800/50 shadow-2xl transition-all duration-400 transform origin-top ${
-          isMenuOpen ? "scale-y-100 opacity-100 visible" : "scale-y-95 opacity-0 invisible"
+        <button
+          type="button"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-nav"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-2xl text-blue-200 transition-colors hover:bg-blue-500/15 hover:text-white md:hidden"
+          onClick={() => setIsMenuOpen((v) => !v)}
+        >
+          <i
+            aria-hidden="true"
+            className={isMenuOpen ? "ri-close-line" : "ri-menu-3-line"}
+          />
+        </button>
+      </nav>
+
+      <div
+        id="mobile-nav"
+        className={`glass-strong absolute top-full right-0 left-0 mt-3 origin-top overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 md:hidden ${
+          isMenuOpen
+            ? "visible scale-y-100 opacity-100"
+            : "invisible scale-y-95 opacity-0"
         }`}
       >
         <ul className="flex flex-col p-2">
-          {navLinks.map((link, index) => (
-            <li key={index}>
-              <a 
-                href={link.href} 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-center text-blue-100 hover:text-white hover:bg-blue-900/50 py-3 rounded-xl text-base font-medium transition-all duration-300"
+          {VIEWS.map((v) => (
+            <li key={v.id}>
+              <button
+                type="button"
+                onClick={() => go(v.id)}
+                aria-current={current === v.id ? "page" : undefined}
+                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-300 ${
+                  current === v.id
+                    ? "bg-blue-500/15 text-white"
+                    : "text-blue-100/80 hover:bg-blue-500/10 hover:text-white"
+                }`}
               >
-                {link.name}
-              </a>
+                <i className={`${v.icon} text-lg`} aria-hidden="true" />
+                {v.label}
+              </button>
             </li>
           ))}
         </ul>
