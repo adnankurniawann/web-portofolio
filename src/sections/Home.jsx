@@ -47,11 +47,7 @@ export default function Home() {
           {PROFILE.tagline}
         </p>
 
-        <p className="mt-5 max-w-2xl text-sm leading-relaxed text-blue-100/70 md:mt-6 md:text-base">
-          {PROFILE.summary}
-        </p>
-
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3 md:mt-8">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:mt-10">
           <a
             href={PROFILE.cv}
             download
