@@ -25,7 +25,10 @@ const TITLES = {
   contact: "Contact — Muhammad Adnan Kurniawan",
 };
 
-const LAUNCH_MS = 1900;
+// Long enough for the scene to spool up, fly its victory loop and clear
+// the top of the frame. Keep in sync with the launch timeline in
+// SceneBackground — the navigation happens the moment the ship is gone.
+const LAUNCH_MS = 2500;
 
 /** Hash is the source of truth so Back/Forward and deep links both work. */
 function parseHash() {
@@ -36,6 +39,9 @@ function parseHash() {
 export default function App() {
   const [route, setRoute] = useState(parseHash);
   const [launching, setLaunching] = useState(false);
+  // The landing crew is parked and motionless until the visitor shows up.
+  // Any sign of presence — a cursor, a tap, a key — starts the orbit.
+  const [awake, setAwake] = useState(false);
   const launchTimer = useRef(0);
 
   // Keep React in sync with the address bar (covers Back/Forward too).
@@ -51,6 +57,27 @@ export default function App() {
   }, [route]);
 
   useEffect(() => () => window.clearTimeout(launchTimer.current), []);
+
+  // Wake on the first sign of a visitor. Touch devices never fire
+  // pointermove without a tap, so a short fallback timer makes sure the
+  // orbit still plays for them instead of leaving a rocket parked forever.
+  useEffect(() => {
+    if (awake) return;
+
+    const wake = () => setAwake(true);
+    const events = ["pointermove", "pointerdown", "keydown", "wheel"];
+    for (const type of events) {
+      window.addEventListener(type, wake, { passive: true });
+    }
+
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const fallback = coarse ? window.setTimeout(wake, 2200) : 0;
+
+    return () => {
+      for (const type of events) window.removeEventListener(type, wake);
+      window.clearTimeout(fallback);
+    };
+  }, [awake]);
 
   const navigate = useCallback((id) => {
     window.location.hash = `#/${id}`;
@@ -79,11 +106,11 @@ export default function App() {
   return (
     <>
       <Suspense fallback={null}>
-        <SceneBackground phase={phase} />
+        <SceneBackground phase={phase} awake={awake} />
       </Suspense>
 
       {isLanding ? (
-        <Landing onEnter={handleEnter} leaving={launching} />
+        <Landing onEnter={handleEnter} leaving={launching} awake={awake} />
       ) : (
         <div className="flex min-h-svh flex-col">
           <Navbar current={route} onNavigate={navigate} />

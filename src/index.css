@@ -194,6 +194,116 @@
 }
 
 /* =========================================================
+   LANDING CALL TO ACTION
+   A pill with a hairline that sweeps around it. The border is a
+   conic gradient masked down to 1px, so it can rotate without the
+   pill itself rotating (a rotated pill would visibly wobble).
+   ========================================================= */
+@property --cta-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.cta {
+  isolation: isolate;
+}
+
+.cta-ring,
+.cta-fill,
+.cta-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.cta-ring {
+  z-index: -1;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--cta-angle),
+    rgb(59 130 246 / 0.15) 0deg,
+    rgb(147 197 253 / 0.95) 55deg,
+    rgb(59 130 246 / 0.15) 130deg,
+    rgb(59 130 246 / 0.15) 230deg,
+    rgb(165 180 252 / 0.8) 300deg,
+    rgb(59 130 246 / 0.15) 360deg
+  );
+  /* Knock the middle out so only the 1px padding ring paints. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: cta-sweep 6s linear infinite;
+}
+
+.cta-fill {
+  z-index: -2;
+  background: rgb(5 12 31 / 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 rgb(191 219 254 / 0.12);
+  transition: background 0.5s var(--ease-expo);
+}
+.cta:hover .cta-fill {
+  background: rgb(16 28 61 / 0.78);
+}
+
+.cta-glow {
+  z-index: -3;
+  background: rgb(59 130 246 / 0.4);
+  filter: blur(28px);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-expo);
+}
+.cta:hover .cta-glow,
+.cta:focus-visible .cta-glow {
+  opacity: 1;
+}
+
+@keyframes cta-sweep {
+  to {
+    --cta-angle: 360deg;
+  }
+}
+
+/* Hint copy is keyed on the mission state, so it remounts and fades in */
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hint-swap {
+  animation: hint-in 0.5s var(--ease-expo) both;
+}
+
+/* Status dot — colour comes from the utility class, the halo from here */
+@keyframes dot-live {
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgb(255 255 255 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0);
+  }
+}
+.dot-live {
+  animation: dot-live 2.2s ease-out infinite;
+}
+
+/* =========================================================
    KEYFRAMES
    ========================================================= */
 @keyframes shimmer {
@@ -323,6 +433,16 @@
   }
 
   .animate-text-rotate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .cta-ring,
+  .dot-live {
+    animation: none;
+  }
+  .hint-swap {
     animation: none;
     opacity: 1;
     transform: none;
