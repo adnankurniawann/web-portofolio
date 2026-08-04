@@ -9,8 +9,11 @@ import { useEffect, useState } from "react";
  * the curtain from flashing, and a hard ceiling means a stalled asset can
  * never trap the visitor behind it.
  */
-const MIN_VISIBLE = 700;
-const MAX_VISIBLE = 3500;
+// MIN_VISIBLE is how long the wordmark holds once the page is ready;
+// SLIDE_MS is the curtain lift on top of it. Together they set the ~2.7 s
+// the visitor actually experiences.
+const MIN_VISIBLE = 1800;
+const MAX_VISIBLE = 4500;
 const SLIDE_MS = 900;
 
 export default function PreLoader({ onDone }) {
