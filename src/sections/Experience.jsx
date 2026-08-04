@@ -1,48 +1,78 @@
 import { EXPERIENCE } from "../content";
-import { PageShell, SectionHeading, ToolChip } from "../components/ui";
+import { Section, SectionHeading, Chip } from "../components/ui";
+import { useReveal } from "../hooks/useReveal";
+
+/** One entry on the timeline. Own component so each gets its own reveal. */
+function Entry({ item, delay }) {
+  const ref = useReveal({ delay });
+
+  return (
+    <li ref={ref} className="reveal relative pb-10 pl-8 last:pb-0 md:pl-10">
+      {/* The rail runs through every marker; the last entry stops it short
+          so the line does not dangle past the final role. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-2 bottom-0 left-[5px] w-px bg-blue-500/20 md:left-[7px]"
+      />
+      <span
+        aria-hidden="true"
+        className="border-brand-400 bg-void absolute top-1.5 left-0 h-3 w-3 rounded-full border-2 md:h-3.5 md:w-3.5"
+      />
+
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-base font-semibold text-white md:text-lg">
+          {item.role}
+        </h3>
+        <span className="text-xs text-blue-200/55 md:text-sm">
+          {item.period}
+        </span>
+      </div>
+
+      <p className="text-brand-300 mt-1 text-sm">
+        {item.org}
+        <span className="text-blue-200/45"> · {item.location}</span>
+      </p>
+
+      <ul className="mt-4 space-y-2">
+        {item.points.map((p) => (
+          <li
+            key={p}
+            className="relative pl-4 text-sm leading-relaxed text-blue-100/70"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute top-2 left-0 h-1 w-1 rounded-full bg-blue-400/50"
+            />
+            {p}
+          </li>
+        ))}
+      </ul>
+
+      <ul className="mt-4 flex flex-wrap gap-1.5">
+        {item.tools.map((t) => (
+          <li key={t}>
+            <Chip>{t}</Chip>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+}
 
 export default function Experience() {
   return (
-    <PageShell>
+    <Section id="experience">
       <SectionHeading
-        eyebrow="Journey"
+        eyebrow="Where I have worked"
         title="Experience"
-        description="Professional roles and organisational work that shaped how I build and collaborate."
+        description="Engineering roles across student organisations and events, from backend and data pipelines to production frontends."
       />
 
-      {/* Vertical timeline — reads top-to-bottom now that each section is
-          its own page, so nothing is hidden behind a horizontal swipe. */}
-      <ol className="relative mx-auto max-w-3xl">
-        <span
-          className="absolute top-3 bottom-3 left-[21px] w-px bg-linear-to-b from-blue-500/70 via-blue-500/30 to-transparent md:left-[27px]"
-          aria-hidden="true"
-        />
-
+      <ol className="mt-2">
         {EXPERIENCE.map((item, i) => (
-          <li key={item.id} className="relative flex gap-5 pb-8 last:pb-0 md:gap-7">
-            <span className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-blue-500/40 bg-blue-950 text-sm font-bold text-blue-300 shadow-[0_0_18px_rgb(59_130_246/0.35)] md:h-14 md:w-14 md:text-base">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-
-            <article className="glass card-lift flex-1 rounded-3xl p-5 md:p-7">
-              <h3 className="text-base leading-snug font-bold text-white md:text-xl">
-                {item.role}
-              </h3>
-              <p className="mt-1.5 text-sm font-semibold text-blue-400">
-                {item.org}
-              </p>
-              <p className="mt-3 text-xs leading-relaxed text-blue-100/70 md:text-sm md:leading-loose">
-                {item.desc}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {item.tools.map((t) => (
-                  <ToolChip key={t}>{t}</ToolChip>
-                ))}
-              </div>
-            </article>
-          </li>
+          <Entry key={item.id} item={item} delay={i * 80} />
         ))}
       </ol>
-    </PageShell>
+    </Section>
   );
 }

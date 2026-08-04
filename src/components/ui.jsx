@@ -1,29 +1,36 @@
-/* Small shared presentational pieces used across the section pages. */
+import { useReveal } from "../hooks/useReveal";
 
-export function PageShell({ children, className = "" }) {
+/* Shared presentational pieces. Everything on the page is built from these
+   four, which is what keeps seven very different sections looking like one
+   site rather than seven. */
+
+/**
+ * Anchor target + consistent vertical rhythm for every section.
+ * `scroll-mt` matters as much as the padding: without it the fixed navbar
+ * covers the heading the moment you jump to it.
+ */
+export function Section({ id, children, className = "" }) {
   return (
-    <div
-      className={`mx-auto w-full max-w-6xl px-5 pt-28 pb-20 md:px-8 md:pt-32 ${className}`}
+    <section
+      id={id}
+      className={`scroll-mt-24 px-5 py-20 md:px-8 md:py-28 ${className}`}
     >
-      {children}
-    </div>
+      <div className="mx-auto w-full max-w-5xl">{children}</div>
+    </section>
   );
 }
 
-export function SectionHeading({ eyebrow, title, description, align = "center" }) {
-  const centered = align === "center";
+/** Left-aligned throughout — centred headings read as a template. */
+export function SectionHeading({ eyebrow, title, description }) {
+  const ref = useReveal();
+
   return (
-    <div
-      className={`mb-10 max-w-2xl md:mb-14 ${centered ? "mx-auto text-center" : ""}`}
-    >
+    <div ref={ref} className="reveal mb-10 md:mb-14">
       <p className="eyebrow mb-3">{eyebrow}</p>
-      <h2 className="text-3xl font-bold text-white md:text-4xl">{title}</h2>
-      <div
-        className={`rule-glow mt-5 w-28 ${centered ? "mx-auto" : ""}`}
-        aria-hidden="true"
-      />
+      <h2 className="text-2xl font-bold text-white md:text-3xl">{title}</h2>
+      <div className="rule-glow mt-5 w-24" aria-hidden="true" />
       {description && (
-        <p className="mt-5 text-sm leading-relaxed text-blue-200/70 md:text-base">
+        <p className="mt-5 max-w-2xl text-sm leading-relaxed text-blue-100/70 md:text-base">
           {description}
         </p>
       )}
@@ -31,10 +38,25 @@ export function SectionHeading({ eyebrow, title, description, align = "center" }
   );
 }
 
-export function ToolChip({ children }) {
+export function Chip({ children }) {
   return (
-    <span className="rounded-lg border border-blue-500/25 bg-blue-500/10 px-2.5 py-1 text-[11px] font-medium text-blue-200 md:text-xs">
+    <span className="rounded-md border border-blue-500/20 bg-blue-500/8 px-2.5 py-1 text-[11px] font-medium text-blue-200/90 md:text-xs">
       {children}
     </span>
+  );
+}
+
+/** Hairline border over a barely-there fill. No heavy shadows anywhere. */
+export function Card({ children, className = "", interactive = false }) {
+  return (
+    <div
+      className={`rounded-card border border-blue-500/15 bg-surface/40 p-6 md:p-7 ${
+        interactive
+          ? "transition-colors duration-300 hover:border-blue-400/35 hover:bg-surface/60"
+          : ""
+      } ${className}`}
+    >
+      {children}
+    </div>
   );
 }

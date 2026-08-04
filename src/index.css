@@ -2,8 +2,9 @@
 
 /* =========================================================
    DESIGN TOKENS
-   Palette intentionally keeps the original navy/blue identity.
-   Typography upgraded to Space Grotesk (display) + DM Sans (body).
+   Palette carried over unchanged from the previous build — deep
+   navy surfaces with a single blue accent. Typography stays
+   Space Grotesk (display) + DM Sans (body).
    ========================================================= */
 @theme {
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -15,26 +16,24 @@
   --color-surface: #0b1530;
   --color-surface-2: #101c3d;
 
-  /* Brand — the existing blue, formalised into a scale */
+  /* Brand — one accent for the whole site, formalised into a scale */
   --color-brand-200: #bfdbfe;
   --color-brand-300: #93c5fd;
   --color-brand-400: #60a5fa;
   --color-brand-500: #3b82f6;
   --color-brand-600: #2563eb;
 
-  /* Rocket accent — kept from the original canvas */
-  --color-ember-400: #fb923c;
-  --color-ember-500: #f97316;
-
-  --radius-card: 1.25rem;
+  --radius-card: 1rem;
 
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   html {
-    /* Offset for the fixed navbar when jumping to #anchors */
-    scroll-padding-top: 6.5rem;
+    /* Clears the fixed navbar when jumping to an #anchor. Must stay at
+       least as tall as the bar plus its top offset, or section headings
+       land underneath it. */
+    scroll-padding-top: 6rem;
   }
 
   body {
@@ -81,8 +80,9 @@
 
 /* =========================================================
    BACKDROP
-   Static gradient wash that sits under the WebGL canvas so the
-   page still looks intentional before/if the 3D scene loads.
+   Two soft washes, nothing else. The old build layered three
+   gradients plus a grid under a WebGL canvas; with the canvas
+   gone that reads as noise rather than depth.
    ========================================================= */
 .backdrop-wash {
   position: fixed;
@@ -90,72 +90,33 @@
   z-index: -20;
   background:
     radial-gradient(
-      70rem 40rem at 15% -10%,
-      rgb(37 99 235 / 0.22),
-      transparent 60%
+      65rem 40rem at 12% -8%,
+      rgb(37 99 235 / 0.16),
+      transparent 62%
     ),
     radial-gradient(
-      55rem 35rem at 90% 10%,
-      rgb(99 102 241 / 0.16),
+      55rem 38rem at 92% 8%,
+      rgb(99 102 241 / 0.1),
       transparent 60%
     ),
-    radial-gradient(
-      60rem 45rem at 50% 110%,
-      rgb(29 78 216 / 0.14),
-      transparent 65%
-    ),
-    linear-gradient(180deg, #020617 0%, #050c1f 45%, #020617 100%);
-}
-
-/* Fine grid overlay — adds the "engineered" texture without weight */
-.backdrop-grid {
-  position: fixed;
-  inset: 0;
-  z-index: -19;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgb(96 165 250 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(96 165 250 / 0.05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 100%);
-  -webkit-mask-image: radial-gradient(
-    70% 60% at 50% 30%,
-    #000 30%,
-    transparent 100%
-  );
+    linear-gradient(180deg, #020617 0%, #050c1f 50%, #020617 100%);
 }
 
 /* =========================================================
    COMPONENT UTILITIES
    ========================================================= */
 .glass {
-  background: rgb(11 21 48 / 0.55);
+  background: rgb(11 21 48 / 0.5);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgb(59 130 246 / 0.18);
+  border: 1px solid rgb(59 130 246 / 0.15);
 }
 
 .glass-strong {
   background: rgb(5 12 31 / 0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(59 130 246 / 0.28);
-}
-
-/* Card with an animated gradient hairline that lights up on hover */
-.card-lift {
-  position: relative;
-  transition:
-    transform 0.35s var(--ease-expo),
-    border-color 0.35s var(--ease-expo),
-    box-shadow 0.35s var(--ease-expo);
-}
-.card-lift:hover {
-  transform: translateY(-6px);
-  border-color: rgb(96 165 250 / 0.55);
-  box-shadow:
-    0 18px 40px -12px rgb(37 99 235 / 0.35),
-    0 0 0 1px rgb(96 165 250 / 0.12);
+  border: 1px solid rgb(59 130 246 / 0.2);
 }
 
 .gradient-text {
@@ -175,276 +136,76 @@
 
 .eyebrow {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-brand-400);
 }
 
-/* Thin luminous rule under section headings */
+/* Hairline that fades out — used under section headings */
 .rule-glow {
   height: 1px;
   background: linear-gradient(
     90deg,
-    transparent,
-    rgb(96 165 250 / 0.6),
+    rgb(96 165 250 / 0.55),
     transparent
   );
 }
 
-/* =========================================================
-   LANDING CALL TO ACTION
-   A pill with a hairline that sweeps around it. The border is a
-   conic gradient masked down to 1px, so it can rotate without the
-   pill itself rotating (a rotated pill would visibly wobble).
-   ========================================================= */
-@property --cta-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-.cta {
-  isolation: isolate;
-}
-
-.cta-ring,
-.cta-fill,
-.cta-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  pointer-events: none;
-}
-
-.cta-ring {
-  z-index: -1;
-  padding: 1px;
-  background: conic-gradient(
-    from var(--cta-angle),
-    rgb(59 130 246 / 0.15) 0deg,
-    rgb(147 197 253 / 0.95) 55deg,
-    rgb(59 130 246 / 0.15) 130deg,
-    rgb(59 130 246 / 0.15) 230deg,
-    rgb(165 180 252 / 0.8) 300deg,
-    rgb(59 130 246 / 0.15) 360deg
-  );
-  /* Knock the middle out so only the 1px padding ring paints. */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: cta-sweep 6s linear infinite;
-}
-
-.cta-fill {
-  z-index: -2;
-  background: rgb(5 12 31 / 0.72);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: inset 0 1px 0 rgb(191 219 254 / 0.12);
-  transition: background 0.5s var(--ease-expo);
-}
-.cta:hover .cta-fill {
-  background: rgb(16 28 61 / 0.78);
-}
-
-.cta-glow {
-  z-index: -3;
-  background: rgb(59 130 246 / 0.4);
-  filter: blur(28px);
-  opacity: 0;
-  transition: opacity 0.5s var(--ease-expo);
-}
-.cta:hover .cta-glow,
-.cta:focus-visible .cta-glow {
-  opacity: 1;
-}
-
-@keyframes cta-sweep {
-  to {
-    --cta-angle: 360deg;
-  }
-}
-
-/* Hint copy is keyed on the mission state, so it remounts and fades in */
-@keyframes hint-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.hint-swap {
-  animation: hint-in 0.5s var(--ease-expo) both;
-}
-
-/* Status dot — colour comes from the utility class, the halo from here */
-@keyframes dot-live {
-  0% {
-    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.35);
-  }
-  70% {
-    box-shadow: 0 0 0 7px rgb(255 255 255 / 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgb(255 255 255 / 0);
-  }
-}
-.dot-live {
-  animation: dot-live 2.2s ease-out infinite;
-}
-
-/* =========================================================
-   KEYFRAMES
-   ========================================================= */
 @keyframes shimmer {
   to {
     background-position: 200% center;
   }
 }
 
-@keyframes float-y {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-.animate-float {
-  animation: float-y 6s ease-in-out infinite;
-}
-
-/* Rotating role text in the hero */
-.animate-text-rotate {
-  animation: fadeEffect 3s infinite;
-}
-@keyframes fadeEffect {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  20%,
-  80% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* =========================================================
+   SCROLL REVEAL
+   One shared utility, toggled by an IntersectionObserver in useReveal.
+   Starting at opacity 0 is safe here because the whole page is
+   React-rendered — if the script never runs there is no markup to
+   hide. The hook still reveals everything immediately when
+   IntersectionObserver is missing.
+   ========================================================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s var(--ease-expo),
+    transform 0.6s var(--ease-expo);
 }
 
-@keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 rgb(34 197 94 / 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgb(34 197 94 / 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
-  }
-}
-.animate-pulse-ring {
-  animation: pulse-ring 2.4s ease-out infinite;
-}
-
-/* --- view transitions ---------------------------------------------------
-   Each section is its own page now, so the swap needs to read as a
-   deliberate transition rather than a flash of new content. */
-
-@keyframes view-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.view-enter {
-  animation: view-in 0.45s var(--ease-expo) both;
-}
-
-@keyframes landing-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.landing-enter {
-  animation: landing-in 0.9s var(--ease-expo) both;
-}
-
-/* Copy clears out ahead of the rocket so the launch is the only thing moving */
-@keyframes landing-out {
-  to {
-    opacity: 0;
-    transform: translateY(-28px) scale(0.98);
-    filter: blur(4px);
-  }
-}
-.landing-leave {
-  animation: landing-out 0.7s var(--ease-expo) both;
-  pointer-events: none;
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
 }
 
 /* =========================================================
    REDUCED MOTION
-   Vestibular safety: kill decorative motion, keep everything
-   readable and in its final state (AOS included).
+   Vestibular safety: kill decorative motion and land everything on
+   its final frame, including the reveal animation.
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 
-  /* Land on the final frame instead of animating into it. */
-  .view-enter,
-  .landing-enter {
-    animation: none;
-  }
-  .landing-leave {
-    animation: none;
-    opacity: 0;
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 
   .gradient-text {
     animation: none;
     background-position: 0 center;
-  }
-
-  .animate-text-rotate {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .cta-ring,
-  .dot-live {
-    animation: none;
-  }
-  .hint-swap {
-    animation: none;
-    opacity: 1;
-    transform: none;
   }
 }

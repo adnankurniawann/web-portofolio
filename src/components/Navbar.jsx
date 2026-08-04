@@ -1,118 +1,166 @@
-import { useState, useEffect } from "react";
-import { VIEWS } from "../content";
+import { useEffect, useState } from "react";
+
+import { SECTIONS, PROFILE } from "../content";
+
+/** Must match `scroll-mt` on the sections and `scroll-padding-top` in CSS. */
+const NAV_OFFSET = 96;
 
 /**
- * Primary navigation. Since sections are pages rather than scroll targets,
- * this bar stays pinned at all times — hiding it would leave no way to move
- * between sections.
+ * Anchor navigation with a scroll spy.
+ *
+ * The links are real <a href="#id"> rather than scroll handlers, so they can
+ * be opened in a new tab, copied, and used from the keyboard — and they keep
+ * working if the observer below never runs.
  */
-const Navbar = ({ current, onNavigate }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar = () => {
+  const [active, setActive] = useState(SECTIONS[0].id);
+  const [open, setOpen] = useState(false);
 
-  // Close the mobile sheet on Escape, and whenever the view changes.
+  // Close the mobile sheet on Escape.
   useEffect(() => {
-    if (!isMenuOpen) return;
-    const onKey = (e) => e.key === "Escape" && setIsMenuOpen(false);
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isMenuOpen]);
+  }, [open]);
 
-  // Note: every menu entry routes through go(), which closes the sheet —
-  // so there is no need to mirror `current` back into state here.
-  const go = (id) => {
-    setIsMenuOpen(false);
-    onNavigate(id);
-  };
+  useEffect(() => {
+    const els = SECTIONS.map((s) => document.getElementById(s.id)).filter(
+      Boolean,
+    );
+    if (!els.length || typeof IntersectionObserver === "undefined") return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        // Callback order is not guaranteed, so pick the topmost visible
+        // section rather than trusting whichever entry fired last.
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
+          );
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      // Top edge pulled down past the bar so a section counts as active the
+      // moment it clears the navbar, not while it is still hidden behind it.
+      { rootMargin: `-${NAV_OFFSET}px 0px -55% 0px`, threshold: 0 },
+    );
+
+    els.forEach((el) => io.observe(el));
+
+    // The last section is shorter than the remaining viewport, so it can
+    // never satisfy the observer's bottom margin. Without this it would
+    // stay un-highlighted no matter how far you scroll.
+    const onScroll = () => {
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2;
+      if (atBottom) setActive(SECTIONS[SECTIONS.length - 1].id);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
-    <header className="fixed top-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2">
+    <header className="fixed top-4 left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-5xl -translate-x-1/2">
       <nav
         aria-label="Primary"
-        className="glass-strong flex items-center justify-between rounded-full px-4 py-2.5 shadow-[0_8px_32px_-8px_rgb(2_6_23/0.8)] md:px-6"
+        className="glass-strong flex items-center justify-between rounded-full py-2 pr-2 pl-4 md:pl-5"
       >
-        <button
-          type="button"
-          onClick={() => go("home")}
-          className="gradient-text font-display text-base font-bold tracking-tight transition-transform duration-300 hover:scale-105 md:text-lg"
+        <a
+          href="#home"
+          className="font-display shrink-0 text-sm font-bold tracking-tight text-white transition-colors duration-300 hover:text-blue-200 md:text-base"
         >
-          @adnankurniawann
-        </button>
+          adnan<span className="text-brand-400">.</span>
+        </a>
 
-        <ul className="hidden items-center gap-1 md:flex">
-          {VIEWS.map((v) => {
-            const isActive = current === v.id;
+        <ul className="hidden items-center gap-0.5 md:flex">
+          {SECTIONS.map((s) => {
+            const isActive = active === s.id;
             return (
-              <li key={v.id}>
-                <button
-                  type="button"
-                  onClick={() => go(v.id)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`relative block rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300 lg:px-4 ${
-                    isActive ? "text-white" : "text-blue-200/70 hover:text-white"
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  aria-current={isActive ? "true" : undefined}
+                  className={`relative block rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 ${
+                    isActive
+                      ? "text-white"
+                      : "text-blue-200/60 hover:text-white"
                   }`}
                 >
                   {isActive && (
                     <span
                       aria-hidden="true"
-                      className="absolute inset-0 rounded-full border border-blue-400/40 bg-blue-500/15"
+                      className="absolute inset-0 rounded-full bg-blue-500/15"
                     />
                   )}
-                  <span className="relative">{v.label}</span>
-                </button>
+                  <span className="relative">{s.label}</span>
+                </a>
               </li>
             );
           })}
         </ul>
 
-        <button
-          type="button"
-          onClick={() => go("contact")}
-          className="hidden rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-500 md:inline-block"
+        <a
+          href={PROFILE.cv}
+          download
+          className="bg-brand-600 hover:bg-brand-500 hidden shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold text-white transition-colors duration-300 md:inline-block"
         >
-          Let's talk
-        </button>
+          CV
+        </a>
 
         <button
           type="button"
-          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-          aria-expanded={isMenuOpen}
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={open}
           aria-controls="mobile-nav"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-2xl text-blue-200 transition-colors hover:bg-blue-500/15 hover:text-white md:hidden"
-          onClick={() => setIsMenuOpen((v) => !v)}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-blue-200 transition-colors hover:bg-blue-500/15 hover:text-white md:hidden"
+          onClick={() => setOpen((v) => !v)}
         >
-          <i
-            aria-hidden="true"
-            className={isMenuOpen ? "ri-close-line" : "ri-menu-3-line"}
-          />
+          <i aria-hidden="true" className={open ? "ri-close-line" : "ri-menu-3-line"} />
         </button>
       </nav>
 
       <div
         id="mobile-nav"
-        className={`glass-strong absolute top-full right-0 left-0 mt-3 origin-top overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 md:hidden ${
-          isMenuOpen
+        className={`glass-strong absolute top-full right-0 left-0 mt-2 origin-top overflow-hidden rounded-2xl transition-all duration-300 md:hidden ${
+          open
             ? "visible scale-y-100 opacity-100"
             : "invisible scale-y-95 opacity-0"
         }`}
       >
         <ul className="flex flex-col p-2">
-          {VIEWS.map((v) => (
-            <li key={v.id}>
-              <button
-                type="button"
-                onClick={() => go(v.id)}
-                aria-current={current === v.id ? "page" : undefined}
-                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-300 ${
-                  current === v.id
+          {SECTIONS.map((s) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                onClick={() => setOpen(false)}
+                aria-current={active === s.id ? "true" : undefined}
+                className={`block rounded-xl px-4 py-3 text-sm font-medium transition-colors duration-300 ${
+                  active === s.id
                     ? "bg-blue-500/15 text-white"
-                    : "text-blue-100/80 hover:bg-blue-500/10 hover:text-white"
+                    : "text-blue-100/75 hover:bg-blue-500/10 hover:text-white"
                 }`}
               >
-                <i className={`${v.icon} text-lg`} aria-hidden="true" />
-                {v.label}
-              </button>
+                {s.label}
+              </a>
             </li>
           ))}
+          <li>
+            <a
+              href={PROFILE.cv}
+              download
+              onClick={() => setOpen(false)}
+              className="text-brand-300 mt-1 block rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-500/10"
+            >
+              Download CV
+            </a>
+          </li>
         </ul>
       </div>
     </header>
