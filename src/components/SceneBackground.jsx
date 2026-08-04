@@ -4,22 +4,22 @@ import * as THREE from "three";
 /* ============================================================
    3D SPACE SCENE
 
-   Three phases, driven by the `phase` prop:
-     landing   — rocket + astronaut hovering, ready to launch
-     launching — rocket climbs out, stars streak briefly
-     app       — crew gone, stars drift slowly as calm backdrop
+   Phases (driven by the `phase` prop):
+     landing   — spacecraft + EVA astronaut, centred, text-free
+     launching — the ship burns out of frame, stars streak
+     app       — crew gone, stars drift slowly as a calm backdrop
 
-   The in-app drift is deliberately gentle: this is a backdrop for
-   reading, not the subject. Only the landing is allowed to be busy.
+   The craft and suit are modelled in a hard-sci-fi register (Project
+   Hail Mary / real EVA hardware) rather than as a cartoon rocket:
+   segmented hull, radiator wings, lathe-turned engine bells, gold MLI
+   foil, and a suit with joint rings, PLSS pack and a gold visor.
 
-   Performance:
-   - Star motion runs in the vertex shader (no per-frame CPU cost).
-   - One draw call per layer.
-   - DPR capped at 2; loop suspended while the tab is hidden.
+   Realism comes mostly from lighting, not polygons — a procedural
+   environment map through PMREM gives the metals something to reflect,
+   and ACES tone mapping keeps the highlights from clipping to flat white.
    ============================================================ */
 
-// Target star speeds per phase. `app` is ~1/5 of the landing pace.
-const SPEED = { landing: 0.32, launching: 9.0, app: 0.16 };
+const SPEED = { landing: 0.26, launching: 9.0, app: 0.16 };
 
 const STAR_VERT = /* glsl */ `
   uniform float uTime;
@@ -38,9 +38,6 @@ const STAR_VERT = /* glsl */ `
 
   void main() {
     vec3 p = position;
-
-    // uTime is pre-integrated on the CPU (time * speed) so that speed
-    // changes ease in smoothly instead of making stars jump position.
     float d = mod((-p.z - 5.0) - uTime * aRate, SPAN);
     p.z = -5.0 - d;
 
@@ -54,8 +51,8 @@ const STAR_VERT = /* glsl */ `
   }
 `;
 
-// No explicit `precision` qualifier: Three injects a matching default into
-// both stages, and overriding only one makes shared uniforms fail to link.
+// No explicit `precision`: Three injects a matching default into both
+// stages, and overriding only one makes shared uniforms fail to link.
 const STAR_FRAG = /* glsl */ `
   uniform float uTime;
 
@@ -98,7 +95,7 @@ const TRAIL_FRAG = /* glsl */ `
     if (r > 0.5) discard;
 
     float a = pow(smoothstep(0.5, 0.0, r), 2.0) * pow(vLife, 1.5);
-    vec3 c = mix(vec3(0.98, 0.42, 0.09), vec3(1.0, 0.94, 0.62), vLife);
+    vec3 c = mix(vec3(0.85, 0.30, 0.06), vec3(0.75, 0.88, 1.0), pow(vLife, 2.2));
     gl_FragColor = vec4(c, a * 0.9);
   }
 `;
@@ -130,6 +127,55 @@ function makeGlowTexture(rgb) {
   return tex;
 }
 
+/**
+ * Equirectangular gradient standing in for a real HDRI: a hot key from the
+ * sun, cool blue bounce from below, deep shadow elsewhere. Fed through
+ * PMREM it gives metal surfaces a believable falloff.
+ */
+function makeEnvTexture() {
+  const w = 512;
+  const h = 256;
+  const cvs = document.createElement("canvas");
+  cvs.width = w;
+  cvs.height = h;
+  const ctx = cvs.getContext("2d");
+
+  // Upper hemisphere: cool starlight. Lower: near-black space.
+  const sky = ctx.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#101d40");
+  sky.addColorStop(0.55, "#0c1a38");
+  sky.addColorStop(1, "#050a18");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+
+  // Key light — the "sun", upper left.
+  const sun = ctx.createRadialGradient(w * 0.26, h * 0.3, 0, w * 0.26, h * 0.3, w * 0.2);
+  sun.addColorStop(0, "#ffffff");
+  sun.addColorStop(0.3, "#cddcff");
+  sun.addColorStop(1, "rgba(12,26,56,0)");
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, w, h);
+
+  // Cool planetary bounce from below right.
+  const bounce = ctx.createRadialGradient(
+    w * 0.72,
+    h * 0.78,
+    0,
+    w * 0.72,
+    h * 0.78,
+    w * 0.26,
+  );
+  bounce.addColorStop(0, "#2f5ea8");
+  bounce.addColorStop(1, "rgba(5,10,24,0)");
+  ctx.fillStyle = bounce;
+  ctx.fillRect(0, 0, w, h);
+
+  const tex = new THREE.CanvasTexture(cvs);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 const STAR_COLORS = [
   [1.0, 1.0, 1.0],
   [0.85, 0.92, 1.0],
@@ -142,7 +188,6 @@ export default function SceneBackground({ phase = "landing" }) {
   const hostRef = useRef(null);
   const phaseRef = useRef(phase);
 
-  // Feed prop changes to the render loop without tearing down the scene.
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
@@ -159,7 +204,7 @@ export default function SceneBackground({ phase = "landing" }) {
         powerPreference: "high-performance",
       });
     } catch {
-      return; // No WebGL — the CSS backdrop is a complete visual on its own.
+      return; // No WebGL — the CSS backdrop stands on its own.
     }
 
     const lowPower =
@@ -171,12 +216,20 @@ export default function SceneBackground({ phase = "landing" }) {
     renderer.setPixelRatio(dpr);
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.setClearColor(0x000000, 0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     host.appendChild(renderer.domElement);
+    // Let CSS own the display size. The resize handler calls setSize with
+    // updateStyle=false (it only resizes the drawing buffer), so without
+    // this the canvas would keep its first-frame pixel dimensions forever
+    // and the scene would render into a shrinking, letterboxed box.
     renderer.domElement.style.display = "block";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      60,
+      55,
       host.clientWidth / host.clientHeight,
       0.1,
       220,
@@ -186,6 +239,22 @@ export default function SceneBackground({ phase = "landing" }) {
     const geometries = [];
     const materials = [];
     const textures = [];
+
+    const G = (g) => {
+      geometries.push(g);
+      return g;
+    };
+    const M = (m) => {
+      materials.push(m);
+      return m;
+    };
+
+    /* ---------------- environment ---------------- */
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envSrc = makeEnvTexture();
+    textures.push(envSrc);
+    const envRT = pmrem.fromEquirectangular(envSrc);
+    scene.environment = envRT.texture;
 
     /* ---------------- starfield ---------------- */
     const STAR_COUNT = lowPower ? 500 : 1400;
@@ -217,20 +286,18 @@ export default function SceneBackground({ phase = "landing" }) {
     starGeo.setAttribute("aSize", new THREE.BufferAttribute(sSize, 1));
     starGeo.setAttribute("aPhase", new THREE.BufferAttribute(sPhase, 1));
     starGeo.setAttribute("aRate", new THREE.BufferAttribute(sRate, 1));
-    geometries.push(starGeo);
+    G(starGeo);
 
-    const starMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uDpr: { value: dpr },
-      },
-      vertexShader: STAR_VERT,
-      fragmentShader: STAR_FRAG,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    materials.push(starMat);
+    const starMat = M(
+      new THREE.ShaderMaterial({
+        uniforms: { uTime: { value: 0 }, uDpr: { value: dpr } },
+        vertexShader: STAR_VERT,
+        fragmentShader: STAR_FRAG,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
 
     const stars = new THREE.Points(starGeo, starMat);
     stars.frustumCulled = false;
@@ -239,21 +306,21 @@ export default function SceneBackground({ phase = "landing" }) {
     /* ---------------- nebula ---------------- */
     const nebulae = [];
     for (const spec of [
-      { rgb: "56,110,240", x: -22, y: 10, z: -58, s: 78 },
+      { rgb: "56,110,240", x: -24, y: 10, z: -58, s: 78 },
       { rgb: "99,102,241", x: 26, y: -6, z: -66, s: 66 },
       { rgb: "37,99,235", x: 4, y: -20, z: -48, s: 58 },
     ]) {
       const tex = makeGlowTexture(spec.rgb);
       textures.push(tex);
-      const mat = new THREE.SpriteMaterial({
-        map: tex,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        opacity: 0.45,
-      });
-      materials.push(mat);
-
+      const mat = M(
+        new THREE.SpriteMaterial({
+          map: tex,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          opacity: 0.42,
+        }),
+      );
       const sprite = new THREE.Sprite(mat);
       sprite.position.set(spec.x, spec.y, spec.z);
       sprite.scale.set(spec.s, spec.s, 1);
@@ -263,209 +330,474 @@ export default function SceneBackground({ phase = "landing" }) {
     }
 
     /* ---------------- lighting ---------------- */
-    scene.add(new THREE.AmbientLight(0x8fb0ff, 1.7));
-    const key = new THREE.DirectionalLight(0xffffff, 2.4);
-    key.position.set(4, 6, 8);
-    scene.add(key);
-    const rim = new THREE.DirectionalLight(0x60a5fa, 1.5);
-    rim.position.set(-6, 2, -4);
+    scene.add(new THREE.AmbientLight(0x6b86c4, 0.55));
+
+    const sun = new THREE.DirectionalLight(0xfff4e6, 3.4);
+    sun.position.set(-5, 4, 6);
+    scene.add(sun);
+
+    const bounce = new THREE.DirectionalLight(0x3b82f6, 1.1);
+    bounce.position.set(6, -3, 2);
+    scene.add(bounce);
+
+    const rim = new THREE.DirectionalLight(0x93c5fd, 1.6);
+    rim.position.set(2, 3, -7);
     scene.add(rim);
-    const engineLight = new THREE.PointLight(0xf97316, 3.2, 16, 2);
+
+    const engineLight = new THREE.PointLight(0x9ecbff, 3.0, 18, 2);
     scene.add(engineLight);
 
-    /* ---------------- crew (landing only) ---------------- */
-    const crew = new THREE.Group();
-    scene.add(crew);
+    /* ---------------- shared materials ---------------- */
+    const matHull = M(
+      new THREE.MeshStandardMaterial({
+        color: 0xd6dbe4,
+        metalness: 0.45,
+        roughness: 0.42,
+        envMapIntensity: 1.1,
+      }),
+    );
+    const matPanel = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x8d97a8,
+        metalness: 0.75,
+        roughness: 0.34,
+        envMapIntensity: 1.2,
+      }),
+    );
+    const matDark = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x232c3b,
+        metalness: 0.7,
+        roughness: 0.42,
+        envMapIntensity: 1,
+      }),
+    );
+    const matFoil = M(
+      new THREE.MeshStandardMaterial({
+        color: 0xc9922f,
+        metalness: 1,
+        roughness: 0.3,
+        envMapIntensity: 1.5,
+      }),
+    );
+    const matNozzle = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x4b5160,
+        metalness: 0.95,
+        roughness: 0.3,
+        side: THREE.DoubleSide,
+        envMapIntensity: 1.3,
+      }),
+    );
+    const matGlass = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x0b1c3a,
+        metalness: 0.9,
+        roughness: 0.06,
+        envMapIntensity: 1.6,
+      }),
+    );
 
-    // -- rocket, built upright along +Y --
-    const rocket = new THREE.Group();
+    const matSuit = M(
+      new THREE.MeshStandardMaterial({
+        color: 0xe8ecf3,
+        metalness: 0.05,
+        roughness: 0.78,
+        envMapIntensity: 0.9,
+      }),
+    );
+    const matVisor = M(
+      new THREE.MeshStandardMaterial({
+        color: 0xffc061,
+        metalness: 1,
+        roughness: 0.09,
+        envMapIntensity: 2.1,
+      }),
+    );
+    const matJoint = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x9aa3b2,
+        metalness: 0.85,
+        roughness: 0.3,
+        envMapIntensity: 1.2,
+      }),
+    );
+    const matRed = M(
+      new THREE.MeshStandardMaterial({
+        color: 0xc0392b,
+        metalness: 0.1,
+        roughness: 0.65,
+      }),
+    );
+    const matBlue = M(
+      new THREE.MeshStandardMaterial({
+        color: 0x2563eb,
+        metalness: 0.2,
+        roughness: 0.5,
+      }),
+    );
 
-    const hullMat = new THREE.MeshStandardMaterial({
-      color: 0xe8eef7,
-      metalness: 0.6,
-      roughness: 0.32,
-    });
-    materials.push(hullMat);
-    const darkMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
-      metalness: 0.55,
-      roughness: 0.45,
-    });
-    materials.push(darkMat);
-    const accentMat = new THREE.MeshStandardMaterial({
-      color: 0x3b82f6,
-      metalness: 0.45,
-      roughness: 0.3,
-      emissive: 0x1d4ed8,
-      emissiveIntensity: 0.4,
-    });
-    materials.push(accentMat);
+    /* ---------------- spacecraft ---------------- */
+    // Built nose-up along +Y so the launch is a straight climb.
+    const ship = new THREE.Group();
 
-    const hullGeo = new THREE.CylinderGeometry(0.34, 0.42, 1.9, 24);
-    geometries.push(hullGeo);
-    rocket.add(new THREE.Mesh(hullGeo, hullMat));
+    // Main hull
+    const hull = new THREE.Mesh(G(new THREE.CylinderGeometry(0.52, 0.52, 2.4, 32, 1)), matHull);
+    hull.position.y = -0.5;
+    ship.add(hull);
 
-    const noseGeo = new THREE.ConeGeometry(0.34, 0.95, 24);
-    noseGeo.translate(0, 1.42, 0);
-    geometries.push(noseGeo);
-    rocket.add(new THREE.Mesh(noseGeo, accentMat));
-
-    const bandGeo = new THREE.CylinderGeometry(0.435, 0.435, 0.16, 24);
-    bandGeo.translate(0, -0.62, 0);
-    geometries.push(bandGeo);
-    rocket.add(new THREE.Mesh(bandGeo, accentMat));
-
-    const portGeo = new THREE.SphereGeometry(0.155, 18, 18);
-    portGeo.translate(0, 0.42, 0.3);
-    geometries.push(portGeo);
-    const portMat = new THREE.MeshStandardMaterial({
-      color: 0x7dd3fc,
-      emissive: 0x38bdf8,
-      emissiveIntensity: 1.5,
-      roughness: 0.12,
-    });
-    materials.push(portMat);
-    rocket.add(new THREE.Mesh(portGeo, portMat));
-
-    const finGeo = new THREE.ConeGeometry(0.3, 0.75, 4);
-    geometries.push(finGeo);
-    for (let i = 0; i < 3; i++) {
-      const fin = new THREE.Mesh(finGeo, darkMat);
-      const a = (i / 3) * Math.PI * 2;
-      fin.position.set(Math.cos(a) * 0.42, -0.92, Math.sin(a) * 0.42);
-      fin.rotation.y = -a;
-      fin.rotation.z = Math.cos(a) * -0.32;
-      fin.rotation.x = Math.sin(a) * 0.32;
-      fin.scale.set(0.5, 1, 0.85);
-      rocket.add(fin);
+    // Hull ribs — reused geometry, several instances
+    const ribGeo = G(new THREE.CylinderGeometry(0.545, 0.545, 0.06, 32));
+    for (const y of [-1.5, -1.05, -0.6, -0.15, 0.3]) {
+      const rib = new THREE.Mesh(ribGeo, matPanel);
+      rib.position.y = y;
+      ship.add(rib);
     }
 
-    const flameGeo = new THREE.ConeGeometry(0.28, 1.15, 18, 1, true);
-    flameGeo.rotateX(Math.PI); // point downward
-    flameGeo.translate(0, -1.55, 0);
-    geometries.push(flameGeo);
-    const flameMat = new THREE.MeshBasicMaterial({
-      color: 0xfde68a,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-    });
-    materials.push(flameMat);
-    const flame = new THREE.Mesh(flameGeo, flameMat);
-    rocket.add(flame);
+    // Gold MLI insulation band
+    const foilBand = new THREE.Mesh(
+      G(new THREE.CylinderGeometry(0.555, 0.555, 0.42, 32)),
+      matFoil,
+    );
+    foilBand.position.y = -0.83;
+    ship.add(foilBand);
 
-    crew.add(rocket);
+    // Lab module (wider mid-section)
+    const lab = new THREE.Mesh(G(new THREE.CylinderGeometry(0.63, 0.63, 0.82, 32)), matHull);
+    lab.position.y = 1.1;
+    ship.add(lab);
 
-    // -- astronaut --
+    const labRing = new THREE.Mesh(
+      G(new THREE.CylinderGeometry(0.66, 0.66, 0.08, 32)),
+      matPanel,
+    );
+    labRing.position.y = 1.1;
+    ship.add(labRing);
+
+    // Crew module + dome
+    const crewMod = new THREE.Mesh(
+      G(new THREE.CylinderGeometry(0.5, 0.6, 0.62, 32)),
+      matHull,
+    );
+    crewMod.position.y = 1.82;
+    ship.add(crewMod);
+
+    const dome = new THREE.Mesh(
+      G(new THREE.SphereGeometry(0.5, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2)),
+      matHull,
+    );
+    dome.position.y = 2.13;
+    ship.add(dome);
+
+    // Docking collar
+    const collar = new THREE.Mesh(G(new THREE.TorusGeometry(0.2, 0.045, 10, 24)), matPanel);
+    collar.rotation.x = Math.PI / 2;
+    collar.position.y = 2.6;
+    ship.add(collar);
+
+    // Viewports around the crew module
+    const portGeo = G(new THREE.CylinderGeometry(0.085, 0.085, 0.06, 16));
+    const portRimGeo = G(new THREE.TorusGeometry(0.09, 0.018, 8, 18));
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const px = Math.cos(a) * 0.53;
+      const pz = Math.sin(a) * 0.53;
+
+      const port = new THREE.Mesh(portGeo, matGlass);
+      port.position.set(px, 1.86, pz);
+      port.rotation.z = Math.PI / 2;
+      port.rotation.y = -a;
+      ship.add(port);
+
+      const rim2 = new THREE.Mesh(portRimGeo, matPanel);
+      rim2.position.set(px, 1.86, pz);
+      rim2.rotation.y = -a + Math.PI / 2;
+      ship.add(rim2);
+    }
+
+    // Radiator wings
+    const radGeo = G(new THREE.BoxGeometry(1.5, 0.035, 0.92));
+    const radArmGeo = G(new THREE.CylinderGeometry(0.05, 0.05, 0.42, 10));
+    for (const side of [-1, 1]) {
+      const arm = new THREE.Mesh(radArmGeo, matPanel);
+      arm.rotation.z = Math.PI / 2;
+      arm.position.set(side * 0.7, -0.35, 0);
+      ship.add(arm);
+
+      const rad = new THREE.Mesh(radGeo, matDark);
+      rad.position.set(side * 1.62, -0.35, 0);
+      rad.rotation.x = 0.12 * side;
+      ship.add(rad);
+
+      // Bright edge strip so the wings read against the dark background
+      const edge = new THREE.Mesh(G(new THREE.BoxGeometry(1.5, 0.045, 0.06)), matPanel);
+      edge.position.set(side * 1.62, -0.33, side * 0.44);
+      edge.rotation.x = 0.12 * side;
+      ship.add(edge);
+    }
+
+    // High-gain antenna
+    const dishPts = [];
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      dishPts.push(new THREE.Vector2(t * 0.3, t * t * 0.22));
+    }
+    const dish = new THREE.Mesh(G(new THREE.LatheGeometry(dishPts, 24)), matPanel);
+    dish.material = matPanel;
+    dish.position.set(0.72, 1.35, 0.2);
+    dish.rotation.z = -0.9;
+    dish.rotation.x = -0.3;
+    ship.add(dish);
+
+    const boomGeo = G(new THREE.CylinderGeometry(0.028, 0.028, 0.32, 8));
+    const boom = new THREE.Mesh(boomGeo, matDark);
+    boom.rotation.z = Math.PI / 2.4;
+    boom.position.set(0.5, 1.3, 0.12);
+    ship.add(boom);
+
+    // Thrust structure
+    const skirt = new THREE.Mesh(
+      G(new THREE.CylinderGeometry(0.5, 0.42, 0.32, 24)),
+      matDark,
+    );
+    skirt.position.y = -1.85;
+    ship.add(skirt);
+
+    // Engine bells — lathe-turned so the nozzle flare is a real curve
+    const bellPts = [];
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14;
+      bellPts.push(new THREE.Vector2(0.075 + Math.pow(t, 0.62) * 0.185, -t * 0.46));
+    }
+    const bellGeo = G(new THREE.LatheGeometry(bellPts, 22));
+    const bells = [];
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+      const bell = new THREE.Mesh(bellGeo, matNozzle);
+      bell.position.set(Math.cos(a) * 0.23, -2.02, Math.sin(a) * 0.23);
+      ship.add(bell);
+      bells.push(bell);
+    }
+
+    // Exhaust plumes, one per bell
+    const plumeGeo = G(new THREE.ConeGeometry(0.15, 0.9, 16, 1, true));
+    plumeGeo.rotateX(Math.PI);
+    plumeGeo.translate(0, -0.45, 0);
+    const matPlume = M(
+      new THREE.MeshBasicMaterial({
+        color: 0xbcd8ff,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        toneMapped: false, // keep the plume hot; ACES would grey it out
+      }),
+    );
+    const plumes = [];
+    for (const bell of bells) {
+      const plume = new THREE.Mesh(plumeGeo, matPlume);
+      plume.position.set(bell.position.x, -2.46, bell.position.z);
+      ship.add(plume);
+      plumes.push(plume);
+    }
+
+    ship.scale.setScalar(0.46);
+
+    /* ---------------- EVA astronaut ---------------- */
     const astronaut = new THREE.Group();
 
-    const suitMat = new THREE.MeshStandardMaterial({
-      color: 0xf1f5f9,
-      metalness: 0.15,
-      roughness: 0.62,
-    });
-    materials.push(suitMat);
-    const visorMat = new THREE.MeshStandardMaterial({
-      color: 0x0b1a3a,
-      metalness: 0.9,
-      roughness: 0.08,
-      emissive: 0x1e3a8a,
-      emissiveIntensity: 0.5,
-    });
-    materials.push(visorMat);
+    const helmet = new THREE.Mesh(G(new THREE.SphereGeometry(0.16, 26, 20)), matSuit);
+    helmet.position.y = 0.4;
+    astronaut.add(helmet);
 
-    const helmetGeo = new THREE.SphereGeometry(0.3, 22, 22);
-    helmetGeo.translate(0, 0.62, 0);
-    geometries.push(helmetGeo);
-    astronaut.add(new THREE.Mesh(helmetGeo, suitMat));
+    // Gold faceplate: a patch of sphere centred on +Z (phi = PI/2 faces +Z)
+    const visor = new THREE.Mesh(
+      G(
+        new THREE.SphereGeometry(
+          0.163,
+          26,
+          20,
+          Math.PI / 2 - 0.95,
+          1.9,
+          0.55,
+          1.45,
+        ),
+      ),
+      matVisor,
+    );
+    visor.position.y = 0.4;
+    astronaut.add(visor);
 
-    const visorGeo = new THREE.SphereGeometry(0.245, 22, 22);
-    visorGeo.translate(0, 0.63, 0.1);
-    geometries.push(visorGeo);
-    astronaut.add(new THREE.Mesh(visorGeo, visorMat));
+    const neckRing = new THREE.Mesh(G(new THREE.TorusGeometry(0.115, 0.026, 10, 22)), matJoint);
+    neckRing.rotation.x = Math.PI / 2;
+    neckRing.position.y = 0.275;
+    astronaut.add(neckRing);
 
-    const torsoGeo = new THREE.CapsuleGeometry(0.23, 0.34, 6, 16);
-    torsoGeo.translate(0, 0.1, 0);
-    geometries.push(torsoGeo);
-    astronaut.add(new THREE.Mesh(torsoGeo, suitMat));
+    const torso = new THREE.Mesh(G(new THREE.CapsuleGeometry(0.155, 0.24, 8, 20)), matSuit);
+    torso.position.y = 0.09;
+    astronaut.add(torso);
 
-    const packGeo = new THREE.BoxGeometry(0.34, 0.42, 0.18);
-    packGeo.translate(0, 0.12, -0.28);
-    geometries.push(packGeo);
-    astronaut.add(new THREE.Mesh(packGeo, darkMat));
+    // PLSS life-support pack
+    const plss = new THREE.Mesh(G(new THREE.BoxGeometry(0.29, 0.35, 0.14)), matSuit);
+    plss.position.set(0, 0.11, -0.19);
+    astronaut.add(plss);
 
-    const limbGeo = new THREE.CapsuleGeometry(0.085, 0.3, 5, 12);
-    geometries.push(limbGeo);
+    const plssTop = new THREE.Mesh(G(new THREE.BoxGeometry(0.22, 0.07, 0.11)), matDark);
+    plssTop.position.set(0, 0.3, -0.19);
+    astronaut.add(plssTop);
+
+    // Chest control module + accent
+    const chest = new THREE.Mesh(G(new THREE.BoxGeometry(0.19, 0.12, 0.07)), matDark);
+    chest.position.set(0, 0.15, 0.15);
+    astronaut.add(chest);
+
+    const chestTab = new THREE.Mesh(G(new THREE.BoxGeometry(0.07, 0.035, 0.03)), matBlue);
+    chestTab.position.set(-0.04, 0.15, 0.19);
+    astronaut.add(chestTab);
+
+    const shoulderGeo = G(new THREE.SphereGeometry(0.072, 16, 14));
+    const upperArmGeo = G(new THREE.CapsuleGeometry(0.058, 0.15, 6, 14));
+    const foreArmGeo = G(new THREE.CapsuleGeometry(0.053, 0.14, 6, 14));
+    const jointGeo = G(new THREE.TorusGeometry(0.058, 0.017, 8, 16));
+    const gloveGeo = G(new THREE.SphereGeometry(0.062, 14, 12));
 
     const arms = [];
     for (const side of [-1, 1]) {
-      const arm = new THREE.Mesh(limbGeo, suitMat);
-      arm.position.set(side * 0.31, 0.15, 0);
-      arm.rotation.z = side * 0.75;
+      const arm = new THREE.Group();
+
+      const shoulder = new THREE.Mesh(shoulderGeo, matJoint);
+      arm.add(shoulder);
+
+      const upper = new THREE.Mesh(upperArmGeo, matSuit);
+      upper.position.y = -0.11;
+      arm.add(upper);
+
+      const elbow = new THREE.Mesh(jointGeo, matJoint);
+      elbow.rotation.x = Math.PI / 2;
+      elbow.position.y = -0.2;
+      arm.add(elbow);
+
+      const fore = new THREE.Mesh(foreArmGeo, matSuit);
+      fore.position.set(0, -0.29, 0.03);
+      fore.rotation.x = -0.32;
+      arm.add(fore);
+
+      const glove = new THREE.Mesh(gloveGeo, matDark);
+      glove.position.set(0, -0.38, 0.09);
+      arm.add(glove);
+
+      // Identification stripe, NASA-style
+      const stripe = new THREE.Mesh(
+        G(new THREE.TorusGeometry(0.06, 0.014, 8, 16)),
+        side < 0 ? matRed : matBlue,
+      );
+      stripe.rotation.x = Math.PI / 2;
+      stripe.position.y = -0.05;
+      arm.add(stripe);
+
+      arm.position.set(side * 0.185, 0.2, 0);
+      arm.rotation.z = side * 0.42;
       astronaut.add(arm);
       arms.push(arm);
     }
 
+    const hipGeo = G(new THREE.CapsuleGeometry(0.13, 0.06, 6, 16));
+    const hips = new THREE.Mesh(hipGeo, matSuit);
+    hips.position.y = -0.11;
+    astronaut.add(hips);
+
+    const thighGeo = G(new THREE.CapsuleGeometry(0.068, 0.16, 6, 14));
+    const shinGeo = G(new THREE.CapsuleGeometry(0.06, 0.15, 6, 14));
+    const kneeGeo = G(new THREE.TorusGeometry(0.066, 0.017, 8, 16));
+    const bootGeo = G(new THREE.BoxGeometry(0.11, 0.07, 0.16));
+
+    const legs = [];
     for (const side of [-1, 1]) {
-      const leg = new THREE.Mesh(limbGeo, suitMat);
-      leg.position.set(side * 0.13, -0.32, 0.02);
-      leg.rotation.z = side * 0.16;
-      leg.rotation.x = -0.2;
+      const leg = new THREE.Group();
+
+      const thigh = new THREE.Mesh(thighGeo, matSuit);
+      thigh.position.y = -0.11;
+      leg.add(thigh);
+
+      const knee = new THREE.Mesh(kneeGeo, matJoint);
+      knee.rotation.x = Math.PI / 2;
+      knee.position.y = -0.21;
+      leg.add(knee);
+
+      const shin = new THREE.Mesh(shinGeo, matSuit);
+      shin.position.set(0, -0.3, 0.04);
+      shin.rotation.x = -0.28;
+      leg.add(shin);
+
+      const boot = new THREE.Mesh(bootGeo, matDark);
+      boot.position.set(0, -0.39, 0.11);
+      boot.rotation.x = -0.2;
+      leg.add(boot);
+
+      leg.position.set(side * 0.095, -0.17, 0);
+      leg.rotation.z = side * 0.13;
+      leg.rotation.x = 0.22;
       astronaut.add(leg);
+      legs.push(leg);
     }
 
-    // Chest control patch — small blue accent so the suit reads as a suit.
-    const patchGeo = new THREE.BoxGeometry(0.16, 0.1, 0.06);
-    patchGeo.translate(0, 0.16, 0.21);
-    geometries.push(patchGeo);
-    astronaut.add(new THREE.Mesh(patchGeo, accentMat));
+    astronaut.scale.setScalar(0.95);
 
+    const crew = new THREE.Group();
+    crew.add(ship);
     crew.add(astronaut);
+    scene.add(crew);
 
     /* ---------------- exhaust trail ---------------- */
     const TRAIL_MAX = lowPower ? 80 : 170;
-    const trailGeo = new THREE.BufferGeometry();
+    const trailGeo = G(new THREE.BufferGeometry());
     const tPos = new Float32Array(TRAIL_MAX * 3);
     const tLife = new Float32Array(TRAIL_MAX);
     trailGeo.setAttribute("position", new THREE.BufferAttribute(tPos, 3));
     trailGeo.setAttribute("aLife", new THREE.BufferAttribute(tLife, 1));
     trailGeo.setDrawRange(0, 0);
-    geometries.push(trailGeo);
 
-    const trailMat = new THREE.ShaderMaterial({
-      uniforms: { uDpr: { value: dpr } },
-      vertexShader: TRAIL_VERT,
-      fragmentShader: TRAIL_FRAG,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    materials.push(trailMat);
+    const trailMat = M(
+      new THREE.ShaderMaterial({
+        uniforms: { uDpr: { value: dpr } },
+        vertexShader: TRAIL_VERT,
+        fragmentShader: TRAIL_FRAG,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
 
     const trail = new THREE.Points(trailGeo, trailMat);
     trail.frustumCulled = false;
     scene.add(trail);
 
     const trailPts = [];
-    const nozzle = new THREE.Vector3();
+    const nozzlePos = new THREE.Vector3();
 
     /* ---------------- layout ---------------- */
-    // Portrait screens put the crew above the copy; landscape puts it right.
+    // No copy competes with the scene now, so the crew is centred.
+    let shipBaseY = 0;
+    let astroBase = { x: 0, y: 0 };
+
     const layoutCrew = () => {
+      // The scene is the entire landing, so the craft is framed large —
+      // roughly 60% of viewport height on desktop.
       const portrait = host.clientWidth < host.clientHeight * 1.05;
       if (portrait) {
-        crew.position.set(0, 2.1, 1.5);
-        crew.scale.setScalar(0.82);
-        rocket.position.set(0.55, 0, 0);
-        astronaut.position.set(-1.15, 0.35, 0.6);
+        crew.position.set(0, 0.75, 2.4);
+        crew.scale.setScalar(1.05);
+        ship.position.set(0.44, 0, 0);
+        astroBase = { x: -0.8, y: 0.5 };
       } else {
-        crew.position.set(2.9, -0.35, 2.2);
-        crew.scale.setScalar(1);
-        rocket.position.set(0.5, 0, 0);
-        astronaut.position.set(-1.5, 0.75, 0.9);
+        crew.position.set(0, 0.3, 3.4);
+        crew.scale.setScalar(1.7);
+        ship.position.set(0.95, 0, 0);
+        astroBase = { x: -1.25, y: 0.3 };
       }
+      shipBaseY = 0;
+      astronaut.position.set(astroBase.x, astroBase.y, 0.9);
     };
     layoutCrew();
 
@@ -495,7 +827,6 @@ export default function SceneBackground({ phase = "landing" }) {
       window.addEventListener("pointerleave", onPointerLeave, { passive: true });
     }
 
-    /* ---------------- reduced motion (kept live) ---------------- */
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let noMotion = motionQuery.matches;
 
@@ -517,7 +848,7 @@ export default function SceneBackground({ phase = "landing" }) {
     const clock = new THREE.Clock();
     let raf = 0;
     let elapsed = 0;
-    let starClock = 0; // integrated star travel, so speed changes stay smooth
+    let starClock = 0;
     let speed = SPEED.landing;
     let launchT = 0;
     let running = false;
@@ -538,16 +869,13 @@ export default function SceneBackground({ phase = "landing" }) {
 
       elapsed += dt;
 
-      // Ease the star speed toward its phase target instead of snapping.
       const target = SPEED[ph] ?? SPEED.app;
       speed += (target - speed) * Math.min(1, dt * (ph === "launching" ? 4.5 : 1.2));
       starClock += dt * speed;
-
       starMat.uniforms.uTime.value = starClock;
 
-      // Gentle mouse parallax.
-      const tx = pointer.x * (ph === "app" ? 1.1 : 2.0);
-      const ty = pointer.y * (ph === "app" ? 0.7 : 1.3);
+      const tx = pointer.x * (ph === "app" ? 1.1 : 1.8);
+      const ty = pointer.y * (ph === "app" ? 0.7 : 1.2);
       camAt.x += (tx - camAt.x) * Math.min(1, dt * 1.8);
       camAt.y += (ty - camAt.y) * Math.min(1, dt * 1.8);
       camera.position.x = camAt.x;
@@ -562,7 +890,6 @@ export default function SceneBackground({ phase = "landing" }) {
         n.position.y = b.y + Math.cos(elapsed * 0.04 + i * 1.3) * 2.6;
       }
 
-      /* --- crew --- */
       if (ph === "app") {
         crew.visible = false;
         engineLight.visible = false;
@@ -572,41 +899,46 @@ export default function SceneBackground({ phase = "landing" }) {
 
         if (ph === "launching") {
           launchT += dt;
-          // Ease-in climb: slow off the pad, then accelerating away.
           const t = Math.min(launchT / 2.0, 1);
           const climb = t * t * 34;
-          rocket.position.y = climb;
-          rocket.position.x = 0.5 + t * 1.2;
-          astronaut.position.y = 0.75 + climb * 0.82;
-          astronaut.rotation.z += dt * 2.4;
+          ship.position.y = shipBaseY + climb;
+          astronaut.position.y = astroBase.y + climb * 0.86;
+          astronaut.rotation.z += dt * 2.2;
         } else {
-          // Idle hover — small, slow, unhurried.
-          rocket.position.y = Math.sin(elapsed * 0.85) * 0.13;
-          rocket.rotation.z = Math.sin(elapsed * 0.6) * 0.045;
-          astronaut.position.y =
-            (host.clientWidth < host.clientHeight * 1.05 ? 0.35 : 0.75) +
-            Math.sin(elapsed * 0.7 + 1.2) * 0.16;
-          // Sway rather than spin — a full rotation keeps turning the
-          // visor away from the viewer, which reads as a faceless blob.
-          astronaut.rotation.y = Math.sin(elapsed * 0.32) * 0.5;
-          astronaut.rotation.z = Math.sin(elapsed * 0.45) * 0.16;
-          astronaut.rotation.x = Math.sin(elapsed * 0.38 + 0.8) * 0.12;
-          arms[0].rotation.z = -0.75 + Math.sin(elapsed * 0.9) * 0.12;
-          arms[1].rotation.z = 0.75 - Math.sin(elapsed * 0.9 + 0.6) * 0.12;
+          // Slow, weightless drift — the ship turns just enough for the
+          // light to travel across its panels.
+          ship.position.y = shipBaseY + Math.sin(elapsed * 0.5) * 0.12;
+          ship.rotation.y = elapsed * 0.16;
+          ship.rotation.z = Math.sin(elapsed * 0.33) * 0.06;
+          ship.rotation.x = 0.1 + Math.sin(elapsed * 0.24) * 0.04;
+
+          astronaut.position.x = astroBase.x + Math.sin(elapsed * 0.27) * 0.16;
+          astronaut.position.y = astroBase.y + Math.sin(elapsed * 0.62) * 0.14;
+          astronaut.rotation.y = Math.sin(elapsed * 0.3) * 0.55;
+          astronaut.rotation.z = Math.sin(elapsed * 0.42) * 0.17;
+          astronaut.rotation.x = Math.sin(elapsed * 0.36 + 0.8) * 0.13;
+
+          arms[0].rotation.z = -0.42 + Math.sin(elapsed * 0.8) * 0.14;
+          arms[1].rotation.z = 0.42 - Math.sin(elapsed * 0.8 + 0.7) * 0.14;
+          legs[0].rotation.x = 0.22 + Math.sin(elapsed * 0.55) * 0.1;
+          legs[1].rotation.x = 0.22 + Math.sin(elapsed * 0.55 + 1.1) * 0.1;
         }
 
-        const boost = ph === "launching" ? 2.6 : 1;
-        const flick = 0.8 + Math.sin(elapsed * 26) * 0.14;
-        flame.scale.set(flick * boost * 0.9, flick * boost, flick * boost * 0.9);
-        flameMat.opacity = (ph === "launching" ? 0.85 : 0.5) + flick * 0.15;
+        const burning = ph === "launching";
+        const flick = 0.82 + Math.sin(elapsed * 30) * 0.13;
+        const plumeScale = burning ? 2.4 * flick : 0.55 * flick;
+        for (const p of plumes) {
+          p.scale.set(plumeScale * 0.85, plumeScale, plumeScale * 0.85);
+        }
+        matPlume.opacity = burning ? 0.55 + flick * 0.3 : 0.22 + flick * 0.12;
 
-        nozzle.set(0, -1.15, 0);
-        rocket.localToWorld(nozzle);
-        engineLight.position.copy(nozzle);
-        engineLight.intensity = (ph === "launching" ? 7 : 2.4) + flick * 1.6;
+        nozzlePos.set(0, -2.5, 0);
+        ship.localToWorld(nozzlePos);
+        engineLight.position.copy(nozzlePos);
+        engineLight.intensity = (burning ? 9 : 2.2) + flick * 1.5;
         engineLight.visible = true;
 
-        trailPts.unshift(nozzle.clone());
+        trailPts.unshift(nozzlePos.clone());
         if (trailPts.length > TRAIL_MAX) trailPts.length = TRAIL_MAX;
       }
 
@@ -639,7 +971,6 @@ export default function SceneBackground({ phase = "landing" }) {
     const applyMotionPreference = () => {
       if (noMotion) {
         stop();
-        // Static composed frame: crew posed, nothing moving.
         crew.visible = phaseRef.current !== "app";
         engineLight.visible = crew.visible;
         trailGeo.setDrawRange(0, 0);
@@ -675,6 +1006,10 @@ export default function SceneBackground({ phase = "landing" }) {
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
       for (const t of textures) t.dispose();
+
+      envRT.dispose();
+      pmrem.dispose();
+      scene.environment = null;
 
       renderer.dispose();
       if (renderer.domElement.parentNode === host) {
