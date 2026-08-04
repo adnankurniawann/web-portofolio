@@ -12,7 +12,7 @@ const NAV_OFFSET = 96;
  * be opened in a new tab, copied, and used from the keyboard — and they keep
  * working if the observer below never runs.
  */
-const Navbar = () => {
+const Navbar = ({ ready = true }) => {
   const [active, setActive] = useState(SECTIONS[0].id);
   const [open, setOpen] = useState(false);
 
@@ -66,15 +66,22 @@ const Navbar = () => {
     };
   }, []);
 
+  // The bar is centred with auto margins rather than -translate-x-1/2: the
+  // entrance animation owns `transform`, and the two would overwrite each
+  // other.
   return (
-    <header className="fixed top-4 left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-5xl -translate-x-1/2">
+    <header
+      className={`nav-enter ${
+        ready ? "is-ready" : ""
+      } fixed top-3 right-0 left-0 z-50 px-3 md:top-4 md:px-4`}
+    >
       <nav
         aria-label="Primary"
-        className="glass-strong flex items-center justify-between rounded-full py-2 pr-2 pl-4 md:pl-5"
+        className="glass-strong mx-auto flex max-w-5xl items-center justify-between rounded-full py-2 pr-2 pl-4 md:pl-5"
       >
         <a
           href="#home"
-          className="font-display shrink-0 text-sm font-bold tracking-tight text-white transition-colors duration-300 hover:text-blue-200 md:text-base"
+          className="font-display shrink-0 py-2.5 text-sm font-bold tracking-tight text-white transition-colors duration-300 hover:text-blue-200 md:text-base"
         >
           adnan<span className="text-brand-400">.</span>
         </a>
@@ -87,7 +94,7 @@ const Navbar = () => {
                 <a
                   href={`#${s.id}`}
                   aria-current={isActive ? "true" : undefined}
-                  className={`relative block rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors duration-300 ${
+                  className={`relative block rounded-full px-2 py-1.5 text-[13px] font-medium transition-colors duration-300 lg:px-3 ${
                     isActive
                       ? "text-white"
                       : "text-blue-200/60 hover:text-white"
@@ -119,16 +126,19 @@ const Navbar = () => {
           aria-label={open ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={open}
           aria-controls="mobile-nav"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-blue-200 transition-colors hover:bg-blue-500/15 hover:text-white md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-xl text-blue-200 transition-colors hover:bg-blue-500/15 hover:text-white md:hidden"
           onClick={() => setOpen((v) => !v)}
         >
           <i aria-hidden="true" className={open ? "ri-close-line" : "ri-menu-3-line"} />
         </button>
       </nav>
 
+      {/* Inset to match the header's px-3: an absolutely positioned child
+          resolves left/right against the padding box, so left-0 would let the
+          sheet run past the gutter and touch the screen edges. */}
       <div
         id="mobile-nav"
-        className={`glass-strong absolute top-full right-0 left-0 mt-2 origin-top overflow-hidden rounded-2xl transition-all duration-300 md:hidden ${
+        className={`glass-strong absolute top-full right-3 left-3 mt-2 origin-top overflow-hidden rounded-2xl transition-all duration-300 md:hidden ${
           open
             ? "visible scale-y-100 opacity-100"
             : "invisible scale-y-95 opacity-0"

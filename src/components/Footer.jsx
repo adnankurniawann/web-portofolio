@@ -15,7 +15,7 @@ const Footer = () => (
               target="_blank"
               rel="noreferrer"
               aria-label={s.label}
-              className="text-lg text-blue-200/65 transition-colors duration-300 hover:text-white"
+              className="block p-1.5 text-lg text-blue-200/65 transition-colors duration-300 hover:text-white"
             >
               <i className={s.icon} aria-hidden="true" />
             </a>
@@ -24,7 +24,7 @@ const Footer = () => (
         <li>
           <a
             href="#home"
-            className="text-xs text-blue-200/65 transition-colors duration-300 hover:text-white"
+            className="block px-1 py-2.5 text-xs text-blue-200/65 transition-colors duration-300 hover:text-white"
           >
             Back to top
           </a>

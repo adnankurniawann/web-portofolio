@@ -160,6 +160,89 @@
 }
 
 /* =========================================================
+   PRELOADER CURTAIN + PAGE ENTRANCE
+   The curtain slides up and off; the page slides up into place
+   behind it. Both move the same direction so it reads as one
+   gesture rather than two competing ones.
+
+   Note the transform lives on the curtain and on a wrapper that
+   holds no fixed-position elements — a transformed ancestor turns
+   `position: fixed` into `absolute`, which would strand the navbar
+   partway down the page.
+   ========================================================= */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--color-void);
+  transition: transform 0.9s var(--ease-expo);
+}
+
+.preloader.is-leaving {
+  transform: translateY(-100%);
+}
+
+.preloader-mark {
+  font-size: clamp(2.75rem, 11vw, 5.5rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  color: #fff;
+  animation: mark-in 0.7s var(--ease-expo) both;
+}
+
+/* The wordmark clears out slightly ahead of the curtain — the small
+   parallax keeps the lift from feeling like one flat panel. Killing the
+   animation lets the transition own the properties; its end state matches
+   the element's base style, so there is no jump when it is removed. */
+.preloader.is-leaving .preloader-mark {
+  animation: none;
+  opacity: 0;
+  transform: translateY(-1.5rem);
+  transition:
+    opacity 0.35s linear,
+    transform 0.55s var(--ease-expo);
+}
+
+@keyframes mark-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-enter {
+  opacity: 0;
+  transform: translateY(2rem);
+}
+
+.page-enter.is-ready {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s var(--ease-expo) 0.12s,
+    transform 0.85s var(--ease-expo) 0.12s;
+}
+
+.nav-enter {
+  opacity: 0;
+  transform: translateY(-1rem);
+}
+
+.nav-enter.is-ready {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s var(--ease-expo) 0.35s,
+    transform 0.6s var(--ease-expo) 0.35s;
+}
+
+/* =========================================================
    SCROLL REVEAL
    One shared utility, toggled by an IntersectionObserver in useReveal.
    Starting at opacity 0 is safe here because the whole page is
@@ -199,6 +282,27 @@
   }
 
   .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* The curtain still leaves, it just fades instead of travelling. */
+  .preloader,
+  .preloader-mark {
+    animation: none;
+    transition: none;
+  }
+  .preloader.is-leaving {
+    opacity: 0;
+    transform: none;
+  }
+  .preloader.is-leaving .preloader-mark {
+    transform: none;
+  }
+
+  .page-enter,
+  .nav-enter {
     opacity: 1;
     transform: none;
     transition: none;

@@ -7,7 +7,7 @@
 export const PROFILE = {
   name: "Muhammad Adnan Kurniawan",
   role: "Informatics Engineering @ ITB",
-  tagline: "Software & AI/ML Engineering",
+  tagline: "Software & AI Engineering",
   location: "Bandung, West Java, Indonesia",
   email: "adnankrniawn@gmail.com",
   phone: "+62 813-8528-5012",
@@ -15,7 +15,7 @@ export const PROFILE = {
   cv: "/CV-Muhammad-Adnan-Kurniawan.pdf",
   summary:
     "Informatics Engineering student at Institut Teknologi Bandung focused on artificial intelligence and software engineering. Experienced in building and shipping full-stack web systems, from database and API design to production frontends, alongside data engineering work. Interested in turning complex data into practical tools that solve real problems.",
-  seeking: "Seeking a Software Engineer or AI/ML Engineer internship.",
+  seeking: "Seeking a Software Engineer or AI Engineer internship.",
 };
 
 /** Drives the navbar, the footer and the scroll spy. Order is page order. */

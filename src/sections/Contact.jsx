@@ -55,7 +55,7 @@ export default function Contact() {
                 {d.href ? (
                   <a
                     href={d.href}
-                    className="mt-1.5 block text-sm break-words text-blue-100 transition-colors duration-300 hover:text-white"
+                    className="mt-1 block py-1.5 text-sm break-words text-blue-100 transition-colors duration-300 hover:text-white"
                   >
                     {d.value}
                   </a>

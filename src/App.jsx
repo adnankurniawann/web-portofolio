@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PreLoader from "./components/PreLoader";
 
 import Home from "./sections/Home";
 import About from "./sections/About";
@@ -12,6 +13,11 @@ import Skills from "./sections/Skills";
 import Contact from "./sections/Contact";
 
 export default function App() {
+  // Flipped by the preloader as its curtain starts to lift, which is what
+  // triggers the navbar and page to slide in behind it.
+  const [ready, setReady] = useState(false);
+  const handleDone = useCallback(() => setReady(true), []);
+
   // The previous build was a hash router (#/about). Anything already shared
   // with those links would now land on the hero with no explanation, so
   // rewrite them to the matching anchor once on load.
@@ -30,6 +36,8 @@ export default function App() {
 
   return (
     <>
+      <PreLoader onDone={handleDone} />
+
       <a
         href="#home"
         className="focus:bg-brand-600 sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
@@ -37,19 +45,24 @@ export default function App() {
         Skip to content
       </a>
 
-      <Navbar />
+      <Navbar ready={ready} />
 
-      <main>
-        <Home />
-        <About />
-        <Experience />
-        <Projects />
-        <Achievements />
-        <Skills />
-        <Contact />
-      </main>
+      {/* Wrapper carries the slide-in transform. The navbar is deliberately
+          outside it — a transformed ancestor would break its fixed
+          positioning. */}
+      <div className={`page-enter ${ready ? "is-ready" : ""}`}>
+        <main>
+          <Home />
+          <About />
+          <Experience />
+          <Projects />
+          <Achievements />
+          <Skills />
+          <Contact />
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </>
   );
 }
