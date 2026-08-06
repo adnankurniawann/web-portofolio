@@ -7,11 +7,49 @@ function Project({ item, delay }) {
 
   return (
     <li ref={ref} className="reveal">
-      <Card interactive>
+      <Card interactive className="relative">
+        {item.image && (
+          <div className="mb-6 overflow-hidden rounded-lg border border-blue-500/15 bg-abyss">
+            {/* Intrinsic width/height reserve the box so the card does not
+                jump as the screenshot decodes. */}
+            <img
+              src={item.image}
+              alt={item.imageAlt}
+              width={item.imageW}
+              height={item.imageH}
+              loading="lazy"
+              decoding="async"
+              className="block w-full"
+            />
+          </div>
+        )}
+
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-base font-semibold text-white md:text-lg">
-              {item.name}
+              {item.repo ? (
+                // The ::after overlay stretches this one link across the whole
+                // card, so the card is clickable without adding two or three
+                // duplicate links to the accessibility tree. z-10 is load
+                // bearing: the bullet items below are position:relative and
+                // come later in the DOM, so at auto z-index they paint over
+                // the overlay and swallow clicks on most of the card.
+                <a
+                  href={item.repo}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="after:rounded-card hover:text-brand-300 after:absolute after:inset-0 after:z-10"
+                >
+                  {item.name}
+                  <i
+                    className="ri-github-fill ml-2 align-middle text-base text-blue-200/60"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only"> — view repository on GitHub</span>
+                </a>
+              ) : (
+                item.name
+              )}
             </h3>
             {item.badge && (
               <span className="border-brand-400/30 bg-brand-500/10 text-brand-200 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
@@ -60,8 +98,9 @@ export default function Projects() {
         description="Systems built end to end, from the problem statement through to a working product."
       />
 
-      {/* Stacked rather than a tight grid — each entry carries several lines
-          of detail that a narrow card column would squeeze unreadably. */}
+      {/* Stacked rather than a tight grid — each entry carries a screenshot
+          and several lines of detail that a narrow column would squeeze
+          unreadably. */}
       <ul className="space-y-5">
         {PROJECTS.map((item, i) => (
           <Project key={item.id} item={item} delay={i * 80} />

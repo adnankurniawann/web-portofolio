@@ -103,12 +103,22 @@ export const EXPERIENCE = [
   },
 ];
 
+/**
+ * `repo` and `image` are both optional — a project without either still
+ * renders, it just loses the thumbnail and stops being clickable.
+ */
 export const PROJECTS = [
   {
     id: "hujannet",
     name: "HujanNet",
     period: "Jul 2026 – Present",
     badge: "Active",
+    repo: "https://github.com/radityawsgtg/Ujan",
+    image: "/assets/proyek/hujannet.webp",
+    imageW: 1200,
+    imageH: 570,
+    imageAlt:
+      "HujanNet operations map: reconstructed rainfall over Puncak with microwave links, watershed status and a queue of pending alerts",
     points: [
       "Initiated and built a rainfall estimation system deriving precipitation intensity from microwave backhaul signal attenuation between cellular towers, targeting flood early warning in urban Indonesia.",
       "Processed commercial microwave link data with pycomlink to reconstruct spatial rainfall maps at finer resolution than existing weather radar coverage.",
@@ -131,6 +141,12 @@ export const PROJECTS = [
     id: "gacha-makan",
     name: "Gacha Makan",
     period: "Apr 2026 – Jun 2026",
+    repo: "https://github.com/adnankurniawann/gacha-makan",
+    image: "/assets/proyek/gacha-makan.webp",
+    imageW: 1200,
+    imageH: 609,
+    imageAlt:
+      "Gacha Makan home screen: a single-tap warung picker for Jatinangor with spin and map entry points",
     points: [
       "Built a restaurant discovery app that resolves decision fatigue by surfacing nearby options through a weighted random selection mechanic.",
       "Implemented the recommendation backend on Next.js route handlers, using PostGIS radius queries over Supabase Postgres to rank candidates by proximity.",
