@@ -34,20 +34,11 @@ export const EDUCATION = {
   location: "Bandung, Indonesia",
   degree: "Bachelor of Engineering, Informatics Engineering",
   period: "2025 – 2029 (expected)",
-  gpa: "3.69 / 4.00",
-  credits: "18 credits completed",
-  coursework: [
-    "Algorithms and Programming",
-    "Discrete Mathematics",
-    "Computational Logic",
-    "Computer Organization and Architecture",
-  ],
 };
 
-/** Only figures that can be traced back to a line in the CV. */
 export const HIGHLIGHTS = [
-  { value: "3.69", label: "GPA out of 4.00" },
-  { value: "42", label: "Staff led at STEI-K" },
+  { value: "1st", label: "Place at Garuda Hacks 7.0" },
+  { value: "35", label: "Staff led at STEI-K" },
   { value: "200+", label: "Users on a shipped platform" },
 ];
 
@@ -59,7 +50,7 @@ export const EXPERIENCE = [
     location: "Remote",
     period: "May 2026 – Jul 2026",
     points: [
-      "Built the backend of the TEC Fest competition registration system, finalizing the REST API endpoints for the production web application.",
+      "Built the backend of the TEC Festival competition registration system, finalizing the REST API endpoints for the production web application.",
       "Designed the database schema storing participant biodata and registration status, and implemented user authentication so entrants could self-register and manage their own submissions.",
       "Architected QRIS payment integration to present payment details, validate transactions, and persist payment status per participant.",
     ],
@@ -92,7 +83,7 @@ export const EXPERIENCE = [
   },
   {
     id: "parade-wisuda",
-    role: "Frontend Developer",
+    role: "Front End Developer",
     org: "Parade Wisuda ITB April 2026",
     location: "Remote",
     period: "Feb 2026 – Apr 2026",
@@ -111,7 +102,7 @@ export const PROJECTS = [
   {
     id: "hujannet",
     name: "HujanNet",
-    period: "Jul 2026 – Present",
+    period: "2026 – Present",
     badge: "Active",
     repo: "https://github.com/radityawsgtg/Ujan",
     image: "/assets/proyek/hujannet.webp",
@@ -129,7 +120,7 @@ export const PROJECTS = [
   {
     id: "pulihgo",
     name: "PulihGo",
-    period: "2025",
+    period: "2026",
     badge: "Garuda Hacks 7.0 winner",
     points: [
       "Built a post-stroke rehabilitation app using smartphone gyroscope sensors to track patient range of motion in real time, removing the need for dedicated medical hardware.",
@@ -140,7 +131,7 @@ export const PROJECTS = [
   {
     id: "gacha-makan",
     name: "Gacha Makan",
-    period: "Apr 2026 – Jun 2026",
+    period: "2026",
     repo: "https://github.com/adnankurniawann/gacha-makan",
     image: "/assets/proyek/gacha-makan.webp",
     imageW: 1200,
@@ -160,9 +151,16 @@ export const ACHIEVEMENTS = [
     id: "garuda-hacks",
     icon: "ri-trophy-line",
     title: "1st Place, Health Track",
-    org: "Garuda Hacks 7.0",
-    period: "2025",
+    org: "Garuda Hacks 7.0 National Hackathon",
+    period: "2026",
     desc: "Awarded for PulihGo, the gyroscope-based post-stroke rehabilitation app.",
+    href: "/assets/garuda-hacks-certificate.webp",
+    linkLabel: "View certificate",
+    image: "/assets/garuda-hacks-certificate.webp",
+    imageW: 1400,
+    imageH: 990,
+    imageAlt:
+      "Garuda Hacks 7.0 certificate of achievement presented to Muhammad Adnan Kurniawan for creating PulihGo and taking 1st place in the Health Track",
   },
 ];
 
@@ -171,10 +169,10 @@ export const LEADERSHIP = [
     id: "stei-k",
     icon: "ri-team-line",
     role: "Head of Internal Division",
-    org: "STEI-K ITB",
+    org: "STEI-K ITB 2025 Vertera",
     orgDetail: "Computing Division, School of Electrical Engineering and Informatics",
     period: "Nov 2025 – Jul 2026",
-    desc: "Led 42 staff across two departments: a 26-person Academic Section delivering educational support and resources, and a 16-person Internal Relations Section running community programs.",
+    desc: "Led 35 staff across two departments: a 22-person Academic Section delivering educational support and resources, and a 13-person Internal Relations Section running community programs.",
   },
 ];
 
@@ -185,12 +183,12 @@ export const SKILLS = [
     items: ["Python", "TypeScript", "JavaScript", "C", "SQL"],
   },
   {
-    group: "Frontend",
+    group: "Front End",
     icon: "ri-layout-4-line",
     items: ["React", "Next.js", "Vite", "TailwindCSS", "React Native"],
   },
   {
-    group: "Backend",
+    group: "Back End",
     icon: "ri-server-line",
     items: [
       "Node.js",
@@ -218,7 +216,7 @@ export const SKILLS = [
   {
     group: "Tools",
     icon: "ri-tools-line",
-    items: ["Git", "GitHub", "Linux", "Figma", "Google Sheets API"],
+    items: ["Git", "GitHub", "Figma", "Google Sheets API"],
   },
 ];
 

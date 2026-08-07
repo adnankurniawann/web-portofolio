@@ -1,5 +1,5 @@
 import { PROFILE, EDUCATION, HIGHLIGHTS } from "../content";
-import { Section, SectionHeading, Card, Chip } from "../components/ui";
+import { Section, SectionHeading, Card } from "../components/ui";
 import { useReveal } from "../hooks/useReveal";
 
 export default function About() {
@@ -53,26 +53,10 @@ export default function About() {
               </div>
             </div>
 
-            <p className="mt-4 text-sm text-blue-100/80">{EDUCATION.degree}</p>
-            <p className="mt-1 text-xs text-blue-200/55">{EDUCATION.period}</p>
-
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-blue-500/10 pt-4 text-xs text-blue-200/70">
-              <span>
-                GPA <strong className="text-white">{EDUCATION.gpa}</strong>
-              </span>
-              <span>{EDUCATION.credits}</span>
-            </div>
-
-            <p className="mt-5 text-[11px] font-semibold tracking-wider text-blue-200/50 uppercase">
-              Relevant coursework
+            <p className="mt-4 border-t border-blue-500/10 pt-4 text-sm text-blue-100/80">
+              {EDUCATION.degree}
             </p>
-            <ul className="mt-2.5 flex flex-wrap gap-1.5">
-              {EDUCATION.coursework.map((c) => (
-                <li key={c}>
-                  <Chip>{c}</Chip>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-1 text-xs text-blue-200/55">{EDUCATION.period}</p>
           </Card>
         </div>
       </div>
