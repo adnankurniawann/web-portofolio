@@ -1,8 +1,9 @@
 import { ACHIEVEMENTS } from "../content";
 import { useReveal } from "../hooks/useReveal";
+import SectionTitle from "../components/SectionTitle";
 
-function Award({ item }) {
-  const ref = useReveal();
+function Award({ item, delay }) {
+  const ref = useReveal({ delay });
 
   return (
     <li
@@ -32,8 +33,6 @@ function Award({ item }) {
 }
 
 export default function Achievements() {
-  const headRef = useReveal();
-
   return (
     <section
       id="achievements"
@@ -41,16 +40,12 @@ export default function Achievements() {
       className="column mt-36 md:mt-48"
     >
       <div className="max-w-[35rem]">
-        <h2
-          id="achievements-title"
-          ref={headRef}
-          className="reveal text-head font-medium tracking-[-0.02em] text-white"
-        >
+        <SectionTitle id="achievements-title" index={3}>
           Achievements
-        </h2>
+        </SectionTitle>
         <ul className="mt-10 space-y-5">
-          {ACHIEVEMENTS.map((a) => (
-            <Award key={a.id} item={a} />
+          {ACHIEVEMENTS.map((a, i) => (
+            <Award key={a.id} item={a} delay={i * 80} />
           ))}
         </ul>
       </div>

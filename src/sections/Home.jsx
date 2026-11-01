@@ -1,3 +1,5 @@
+import Portrait from "/assets/hero-img.webp";
+
 import { PROFILE, SOCIALS } from "../content";
 import { useReveal } from "../hooks/useReveal";
 
@@ -7,20 +9,33 @@ import { useReveal } from "../hooks/useReveal";
  * strip down the left edge.
  */
 export default function Home() {
-  const nameRef = useReveal();
-  const leadRef = useReveal({ delay: 80 });
-  const linksRef = useReveal({ delay: 160 });
-  const aboutRef = useReveal({ delay: 240 });
+  const photoRef = useReveal();
+  const nameRef = useReveal({ delay: 80 });
+  const leadRef = useReveal({ delay: 160 });
+  const linksRef = useReveal({ delay: 240 });
+  const aboutRef = useReveal({ delay: 320 });
 
   return (
     <header id="top" className="column pt-[16svh] md:pt-[24svh]">
       <div className="max-w-[35rem] xl:grid xl:max-w-none xl:grid-cols-2 xl:grid-rows-[auto_auto_1fr] xl:gap-x-16">
-        <h1
-          ref={nameRef}
-          className="reveal text-display font-semibold tracking-[-0.035em] text-white xl:col-span-2"
-        >
-          {PROFILE.name}
-        </h1>
+        <div className="xl:col-span-2">
+          <img
+            ref={photoRef}
+            src={Portrait}
+            alt={`Portrait of ${PROFILE.name}`}
+            width="640"
+            height="640"
+            decoding="async"
+            className="reveal ring-brand-400/40 mb-8 size-20 rounded-full object-cover shadow-[0_0_48px_-6px_rgb(59_130_246/0.55)] ring-1 md:size-24"
+          />
+
+          <h1
+            ref={nameRef}
+            className="reveal text-display font-semibold tracking-[-0.035em] text-white"
+          >
+            {PROFILE.name}
+          </h1>
+        </div>
 
         <p
           ref={leadRef}

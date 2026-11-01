@@ -1,8 +1,9 @@
 import { EXPERIENCE } from "../content";
 import { useReveal } from "../hooks/useReveal";
+import SectionTitle from "../components/SectionTitle";
 
-function Job({ job }) {
-  const ref = useReveal();
+function Job({ job, delay }) {
+  const ref = useReveal({ delay });
 
   return (
     <li ref={ref} className="reveal xl:grid xl:grid-cols-2 xl:gap-x-16">
@@ -25,8 +26,6 @@ function Job({ job }) {
 }
 
 export default function Experience() {
-  const headRef = useReveal();
-
   return (
     <section
       id="experience"
@@ -34,16 +33,12 @@ export default function Experience() {
       className="column mt-36 md:mt-48"
     >
       <div className="max-w-[35rem] xl:max-w-none">
-        <h2
-          id="experience-title"
-          ref={headRef}
-          className="reveal text-head font-medium tracking-[-0.02em] text-white"
-        >
+        <SectionTitle id="experience-title" index={1}>
           Work experience
-        </h2>
+        </SectionTitle>
         <ol className="mt-10 space-y-9">
-          {EXPERIENCE.map((job) => (
-            <Job key={job.id} job={job} />
+          {EXPERIENCE.map((job, i) => (
+            <Job key={job.id} job={job} delay={i * 80} />
           ))}
         </ol>
       </div>

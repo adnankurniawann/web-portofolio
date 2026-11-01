@@ -6,7 +6,7 @@
 
 export const PROFILE = {
   name: "Muhammad Adnan Kurniawan",
-  lead: "Informatics student at ITB. I build web apps end to end, plus the data pipelines that feed them.",
+  lead: "Informatics student at ITB. I build web apps end to end, plus the data and models behind them.",
   location: "Bandung, Indonesia",
   email: "adnankrniawn@gmail.com",
   cv: "/CV-Muhammad-Adnan-Kurniawan.pdf",
@@ -90,9 +90,9 @@ export const PROJECTS = [
   {
     id: "hujannet",
     name: "HujanNet",
-    kind: "Data",
+    kind: "AI & Data",
     year: "2026",
-    desc: "Flood early warning that reads rainfall from signal loss on existing cell tower links. You get rain gauges across a city without installing new hardware.",
+    desc: "Flood early warning that reads rainfall from signal loss on existing cell tower links. Our trained reconstruction model cut error from 3.64 to 2.89 mm/h on real Gothenburg link data it never saw.",
     result: "3rd place, AIDeaNation 2026 (BRIN)",
     repo: "https://github.com/radityawsgtg/Ujan",
     image: "/assets/proyek/hujannet.webp",
@@ -112,9 +112,9 @@ export const PROJECTS = [
   {
     id: "gacha-makan",
     name: "Gacha Makan",
-    kind: "Fullstack",
+    kind: "AI & Fullstack",
     year: "2026",
-    desc: "Can't decide where to eat? It spins a weighted random pick from places near you, ranked by distance with PostGIS.",
+    desc: "Can't decide where to eat? It picks from places near you, and a Thompson Sampling bandit learns which picks you accept. In simulation it cut regret 79% against random.",
     repo: "https://github.com/adnankurniawann/gacha-makan",
     image: "/assets/proyek/gacha-makan.webp",
     imageW: 1200,
