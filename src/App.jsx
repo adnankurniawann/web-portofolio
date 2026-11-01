@@ -1,68 +1,45 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import PreLoader from "./components/PreLoader";
+import { PROFILE } from "./content";
 
 import Home from "./sections/Home";
-import About from "./sections/About";
 import Experience from "./sections/Experience";
 import Projects from "./sections/Projects";
 import Achievements from "./sections/Achievements";
-import Skills from "./sections/Skills";
-import Contact from "./sections/Contact";
 
 export default function App() {
-  // Flipped by the preloader as its curtain starts to lift, which is what
-  // triggers the navbar and page to slide in behind it.
-  const [ready, setReady] = useState(false);
-  const handleDone = useCallback(() => setReady(true), []);
-
-  // The previous build was a hash router (#/about). Anything already shared
-  // with those links would now land on the hero with no explanation, so
-  // rewrite them to the matching anchor once on load.
+  // Older builds linked to #/projects-style routes and to sections that no
+  // longer exist. Rewrite the first to a real anchor, drop the second so
+  // shared links land cleanly on top.
   useEffect(() => {
-    const match = window.location.hash.match(/^#\/([\w-]+)$/);
-    if (!match) return;
+    const { hash } = window.location;
+    const id = hash.replace(/^#\/?/, "");
+    if (!id) return;
 
-    const target = document.getElementById(match[1]);
-    if (target) {
-      window.location.replace(`#${match[1]}`);
-    } else {
-      // Unknown legacy route: drop the hash rather than leave a dead anchor.
+    if (!document.getElementById(id)) {
       window.history.replaceState(null, "", window.location.pathname);
+    } else if (hash.startsWith("#/")) {
+      window.location.replace(`#${id}`);
     }
   }, []);
 
   return (
     <>
-      <PreLoader onDone={handleDone} />
+      <main>
+        <Home />
+        <Experience />
+        <Projects />
+        <Achievements />
+      </main>
 
-      <a
-        href="#home"
-        className="focus:bg-brand-600 sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Skip to content
-      </a>
-
-      <Navbar ready={ready} />
-
-      {/* Wrapper carries the slide-in transform. The navbar is deliberately
-          outside it — a transformed ancestor would break its fixed
-          positioning. */}
-      <div className={`page-enter ${ready ? "is-ready" : ""}`}>
-        <main>
-          <Home />
-          <About />
-          <Experience />
-          <Projects />
-          <Achievements />
-          <Skills />
-          <Contact />
-        </main>
-
-        <Footer />
-      </div>
+      <footer className="column text-small text-muted mt-36 pb-12 md:mt-48">
+        <p className="max-w-[35rem]">
+          {PROFILE.name} · {PROFILE.location} ·{" "}
+          <a className="underline underline-offset-4 hover:text-white" href="#top">
+            Back to top
+          </a>
+        </p>
+      </footer>
     </>
   );
 }

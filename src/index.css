@@ -2,74 +2,52 @@
 
 /* =========================================================
    DESIGN TOKENS
-   Palette carried over unchanged from the previous build — deep
-   navy surfaces with a single blue accent. Typography stays
-   Space Grotesk (display) + DM Sans (body).
+   Deep navy surface with a single blue accent, carried over from the
+   previous build. One typeface; hierarchy comes from size and the
+   ink/muted split, not from colour or boxes.
    ========================================================= */
 @theme {
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Albert Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Surfaces — deep navy, never pure black (avoids OLED smear) */
   --color-void: #020617;
-  --color-abyss: #050c1f;
   --color-surface: #0b1530;
-  --color-surface-2: #101c3d;
+  --color-ink: #e6edf7;
+  /* ~6.5:1 on void — muted, still body-readable */
+  --color-muted: #8496b8;
 
-  /* Brand — one accent for the whole site, formalised into a scale */
-  --color-brand-200: #bfdbfe;
   --color-brand-300: #93c5fd;
   --color-brand-400: #60a5fa;
   --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
 
-  --radius-card: 1rem;
+  --text-display: clamp(2.5rem, 7vw, 4.5rem);
+  --text-display--line-height: 1;
+  --text-lead: clamp(1.25rem, 2.2vw, 1.5rem);
+  --text-lead--line-height: 1.4;
+  --text-head: clamp(1.5rem, 3vw, 1.9rem);
+  --text-head--line-height: 1.1;
+  --text-body: clamp(1.0625rem, 1.4vw, 1.16rem);
+  --text-body--line-height: 1.55;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.4;
 
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
-  html {
-    /* Clears the fixed navbar when jumping to an #anchor. Must stay at
-       least as tall as the bar plus its top offset, or section headings
-       land underneath it. */
-    scroll-padding-top: 6rem;
-  }
-
   body {
     font-family: var(--font-sans);
     background-color: var(--color-void);
-    color: #e2e8f0;
-    margin: 0;
-    padding: 0;
+    color: var(--color-ink);
     overflow-x: hidden;
-    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-
-  #root {
-    background-color: transparent;
-    max-width: 100%;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
   }
 
   /* Single visible focus treatment for every interactive element.
      Never removed — only restyled. */
-  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  :where(a, button, [tabindex]):focus-visible {
     outline: 2px solid var(--color-brand-400);
     outline-offset: 3px;
-    border-radius: 0.5rem;
+    border-radius: 4px;
   }
 
   ::selection {
@@ -78,184 +56,45 @@
   }
 }
 
-/* =========================================================
-   BACKDROP
-   Two soft washes, nothing else. The old build layered three
-   gradients plus a grid under a WebGL canvas; with the canvas
-   gone that reads as noise rather than depth.
-   ========================================================= */
+/* Page gutter + max width shared by every block. Narrow column on
+   phones and tablets, two columns from xl. */
+@utility column {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 72rem;
+  padding-inline: 1.5rem;
+  @media (width >= 48rem) {
+    padding-inline: 3rem;
+  }
+}
+
+/* One soft blue wash at the top keeps the navy from reading as flat
+   black, without competing with the text. */
 .backdrop-wash {
   position: fixed;
   inset: 0;
   z-index: -20;
   background:
     radial-gradient(
-      65rem 40rem at 12% -8%,
-      rgb(37 99 235 / 0.16),
+      60rem 36rem at 10% -10%,
+      rgb(37 99 235 / 0.14),
       transparent 62%
     ),
-    radial-gradient(
-      55rem 38rem at 92% 8%,
-      rgb(99 102 241 / 0.1),
-      transparent 60%
-    ),
-    linear-gradient(180deg, #020617 0%, #050c1f 50%, #020617 100%);
-}
-
-/* =========================================================
-   COMPONENT UTILITIES
-   ========================================================= */
-.glass {
-  background: rgb(11 21 48 / 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgb(59 130 246 / 0.15);
-}
-
-.glass-strong {
-  background: rgb(5 12 31 / 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(59 130 246 / 0.2);
-}
-
-.gradient-text {
-  background-image: linear-gradient(
-    100deg,
-    #93c5fd 0%,
-    #60a5fa 35%,
-    #a5b4fc 70%,
-    #93c5fd 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer 8s linear infinite;
-}
-
-.eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-brand-400);
-}
-
-/* Hairline that fades out — used under section headings */
-.rule-glow {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgb(96 165 250 / 0.55),
-    transparent
-  );
-}
-
-@keyframes shimmer {
-  to {
-    background-position: 200% center;
-  }
-}
-
-/* =========================================================
-   PRELOADER CURTAIN + PAGE ENTRANCE
-   The curtain slides up and off; the page slides up into place
-   behind it. Both move the same direction so it reads as one
-   gesture rather than two competing ones.
-
-   Note the transform lives on the curtain and on a wrapper that
-   holds no fixed-position elements — a transformed ancestor turns
-   `position: fixed` into `absolute`, which would strand the navbar
-   partway down the page.
-   ========================================================= */
-.preloader {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  background: var(--color-void);
-  transition: transform 0.9s var(--ease-expo);
-}
-
-.preloader.is-leaving {
-  transform: translateY(-100%);
-}
-
-.preloader-mark {
-  font-size: clamp(2.75rem, 11vw, 5.5rem);
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  color: #fff;
-  animation: mark-in 0.7s var(--ease-expo) both;
-}
-
-/* The wordmark clears out slightly ahead of the curtain — the small
-   parallax keeps the lift from feeling like one flat panel. Killing the
-   animation lets the transition own the properties; its end state matches
-   the element's base style, so there is no jump when it is removed. */
-.preloader.is-leaving .preloader-mark {
-  animation: none;
-  opacity: 0;
-  transform: translateY(-1.5rem);
-  transition:
-    opacity 0.35s linear,
-    transform 0.55s var(--ease-expo);
-}
-
-@keyframes mark-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.page-enter {
-  opacity: 0;
-  transform: translateY(2rem);
-}
-
-.page-enter.is-ready {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.7s var(--ease-expo) 0.12s,
-    transform 0.85s var(--ease-expo) 0.12s;
-}
-
-.nav-enter {
-  opacity: 0;
-  transform: translateY(-1rem);
-}
-
-.nav-enter.is-ready {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.6s var(--ease-expo) 0.35s,
-    transform 0.6s var(--ease-expo) 0.35s;
+    var(--color-void);
 }
 
 /* =========================================================
    SCROLL REVEAL
-   One shared utility, toggled by an IntersectionObserver in useReveal.
-   Starting at opacity 0 is safe here because the whole page is
-   React-rendered — if the script never runs there is no markup to
-   hide. The hook still reveals everything immediately when
-   IntersectionObserver is missing.
+   Toggled by an IntersectionObserver in useReveal. Starting at
+   opacity 0 is safe because the whole page is React-rendered, and
+   the hook reveals immediately when the observer is missing.
    ========================================================= */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(14px);
   transition:
-    opacity 0.6s var(--ease-expo),
-    transform 0.6s var(--ease-expo);
+    opacity 0.7s var(--ease-expo),
+    transform 0.7s var(--ease-expo);
 }
 
 .reveal.is-visible {
@@ -263,11 +102,6 @@
   transform: none;
 }
 
-/* =========================================================
-   REDUCED MOTION
-   Vestibular safety: kill decorative motion and land everything on
-   its final frame, including the reveal animation.
-   ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto !important;
@@ -277,39 +111,11 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 
   .reveal {
     opacity: 1;
     transform: none;
-    transition: none;
-  }
-
-  /* The curtain still leaves, it just fades instead of travelling. */
-  .preloader,
-  .preloader-mark {
-    animation: none;
-    transition: none;
-  }
-  .preloader.is-leaving {
-    opacity: 0;
-    transform: none;
-  }
-  .preloader.is-leaving .preloader-mark {
-    transform: none;
-  }
-
-  .page-enter,
-  .nav-enter {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .gradient-text {
-    animation: none;
-    background-position: 0 center;
   }
 }

@@ -1,113 +1,59 @@
-import { ACHIEVEMENTS, LEADERSHIP } from "../content";
-import { Section, SectionHeading, Card } from "../components/ui";
+import { ACHIEVEMENTS } from "../content";
 import { useReveal } from "../hooks/useReveal";
 
-function Item({ item, title, subtitle, detail, delay }) {
-  const ref = useReveal({ delay });
+function Award({ item }) {
+  const ref = useReveal();
 
   return (
-    <li ref={ref} className="reveal">
-      <Card className="relative h-full" interactive={!!item.href}>
-        {item.image && (
-          <div className="mb-6 overflow-hidden rounded-lg border border-blue-500/15">
-            {/* Intrinsic size reserves the box so the card does not jump as
-                the certificate decodes. */}
-            <img
-              src={item.image}
-              alt={item.imageAlt}
-              width={item.imageW}
-              height={item.imageH}
-              loading="lazy"
-              decoding="async"
-              className="block w-full"
-            />
-          </div>
-        )}
-
-        <div className="flex items-start gap-3">
-          <i
-            className={`${item.icon} text-brand-400 mt-0.5 shrink-0 text-xl`}
-            aria-hidden="true"
-          />
-          <div className="min-w-0">
-            <h3 className="text-base font-semibold text-white">
-              {item.href ? (
-                // Stretched link, same as the project cards. z-10 matters:
-                // without it, later position:relative siblings paint over the
-                // overlay and swallow clicks across most of the card.
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="after:rounded-card hover:text-brand-300 after:absolute after:inset-0 after:z-10"
-                >
-                  {title}
-                  <span className="sr-only"> — {item.linkLabel}</span>
-                </a>
-              ) : (
-                title
-              )}
-            </h3>
-            <p className="text-brand-300 mt-1 text-sm">{subtitle}</p>
-            {detail && (
-              <p className="mt-0.5 text-xs text-blue-200/50">{detail}</p>
-            )}
-            <p className="mt-0.5 text-xs text-blue-200/55">{item.period}</p>
-          </div>
-        </div>
-
-        <p className="mt-4 text-sm leading-relaxed text-blue-100/70">
-          {item.desc}
-        </p>
-
+    <li
+      ref={ref}
+      className="reveal flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+    >
+      <p className="text-body">
+        <span className="font-medium text-white">{item.title}</span>
+        <span className="text-muted">, {item.org}</span>
         {item.href && (
-          <p className="text-brand-300 mt-4 inline-flex items-center gap-1.5 text-xs font-semibold">
-            {item.linkLabel}
-            <i
-              className="ri-arrow-right-up-line text-sm"
-              aria-hidden="true"
-            />
-          </p>
+          <>
+            {" "}
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-small text-brand-300 decoration-brand-300/40 whitespace-nowrap underline underline-offset-4 hover:decoration-brand-300"
+            >
+              certificate ↗
+            </a>
+          </>
         )}
-      </Card>
+      </p>
+      <p className="text-small text-muted shrink-0 tabular-nums">{item.year}</p>
     </li>
   );
 }
 
-/**
- * Award and leadership share a section: one entry each, and separate
- * sections for a single card apiece would read as padding.
- */
 export default function Achievements() {
+  const headRef = useReveal();
+
   return (
-    <Section id="achievements">
-      <SectionHeading
-        eyebrow="Recognition and responsibility"
-        title="Achievements & Leadership"
-      />
-
-      <ul className="grid gap-5 md:grid-cols-2">
-        {ACHIEVEMENTS.map((a, i) => (
-          <Item
-            key={a.id}
-            item={a}
-            title={a.title}
-            subtitle={a.org}
-            delay={i * 80}
-          />
-        ))}
-
-        {LEADERSHIP.map((l, i) => (
-          <Item
-            key={l.id}
-            item={l}
-            title={l.role}
-            subtitle={l.org}
-            detail={l.orgDetail}
-            delay={(ACHIEVEMENTS.length + i) * 80}
-          />
-        ))}
-      </ul>
-    </Section>
+    <section
+      id="achievements"
+      aria-labelledby="achievements-title"
+      className="column mt-36 md:mt-48"
+    >
+      <div className="max-w-[35rem]">
+        <h2
+          id="achievements-title"
+          ref={headRef}
+          className="reveal text-head font-medium tracking-[-0.02em] text-white"
+        >
+          Achievements
+        </h2>
+        <ul className="mt-10 space-y-5">
+          {ACHIEVEMENTS.map((a) => (
+            <Award key={a.id} item={a} />
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }
