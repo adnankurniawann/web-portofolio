@@ -11,7 +11,7 @@ function Award({ item, delay }) {
       className="reveal flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
     >
       <p className="text-body">
-        <span className="font-medium text-white">{item.title}</span>
+        <span className="font-medium text-ink">{item.title}</span>
         <span className="text-muted">, {item.org}</span>
         {item.href && (
           <>
@@ -22,7 +22,9 @@ function Award({ item, delay }) {
               rel="noreferrer"
               className="text-small text-brand-300 decoration-brand-300/40 whitespace-nowrap underline underline-offset-4 hover:decoration-brand-300"
             >
-              certificate ↗
+              certificate
+              <span className="sr-only"> for {item.title} (opens in new tab)</span>{" "}
+              <span aria-hidden="true">↗</span>
             </a>
           </>
         )}

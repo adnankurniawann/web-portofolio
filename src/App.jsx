@@ -35,7 +35,7 @@ export default function App() {
       <footer className="column text-small text-muted mt-36 pb-12 md:mt-48">
         <p className="max-w-[35rem]">
           {PROFILE.name} · {PROFILE.location} ·{" "}
-          <a className="underline underline-offset-4 hover:text-white" href="#top">
+          <a className="underline underline-offset-4 hover:text-ink" href="#top">
             Back to top
           </a>
         </p>

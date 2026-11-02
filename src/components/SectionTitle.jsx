@@ -8,7 +8,7 @@ export default function SectionTitle({ id, index, children }) {
     <h2
       id={id}
       ref={ref}
-      className="reveal text-head flex items-baseline gap-4 font-medium tracking-[-0.02em] text-white"
+      className="reveal text-head flex items-baseline gap-4 font-medium tracking-[-0.02em] text-ink"
     >
       <span className="text-small text-brand-400 font-medium tabular-nums">
         {String(index).padStart(2, "0")}

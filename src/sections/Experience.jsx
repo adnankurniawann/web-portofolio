@@ -8,7 +8,7 @@ function Job({ job, delay }) {
   return (
     <li ref={ref} className="reveal xl:grid xl:grid-cols-2 xl:gap-x-16">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 xl:flex-col xl:items-start xl:justify-start">
-        <h3 className="text-body font-medium text-white">
+        <h3 className="text-body font-medium text-ink">
           {job.role}
           <span className="text-muted">, {job.org}</span>
         </h3>

@@ -31,7 +31,7 @@ export default function Home() {
 
           <h1
             ref={nameRef}
-            className="reveal text-display font-semibold tracking-[-0.035em] text-white"
+            className="reveal text-display font-semibold tracking-[-0.035em] text-balance text-ink"
           >
             {PROFILE.name}
           </h1>
@@ -61,7 +61,7 @@ export default function Home() {
               href={s.href}
               target={s.href.startsWith("http") ? "_blank" : undefined}
               rel="noreferrer"
-              className="group decoration-muted underline underline-offset-[6px] transition-colors hover:decoration-brand-400"
+              className="group decoration-muted py-2 underline underline-offset-[6px] transition-colors hover:decoration-brand-400"
             >
               {s.label}
               <span
@@ -70,6 +70,9 @@ export default function Home() {
               >
                 ↗
               </span>
+              {s.href.startsWith("http") && (
+                <span className="sr-only"> (opens in new tab)</span>
+              )}
             </a>
           ))}
         </div>
