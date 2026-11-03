@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <header id="top" className="column pt-[16svh] md:pt-[24svh]">
       <div className="max-w-[35rem] xl:grid xl:max-w-none xl:grid-cols-2 xl:grid-rows-[auto_auto_1fr] xl:gap-x-16">
-        <div className="xl:col-span-2">
+        <div className="flex items-center gap-5 md:gap-7 xl:col-span-2">
           <img
             ref={photoRef}
             src={Portrait}
@@ -26,7 +26,7 @@ export default function Home() {
             width="640"
             height="640"
             decoding="async"
-            className="reveal ring-brand-400/40 mb-8 size-20 rounded-full object-cover shadow-[0_0_48px_-6px_rgb(59_130_246/0.55)] ring-1 md:size-24"
+            className="reveal ring-brand-400/40 order-last size-20 shrink-0 rounded-full object-cover shadow-[0_0_48px_-6px_rgb(59_130_246/0.55)] ring-1 md:size-24"
           />
 
           <h1
