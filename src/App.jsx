@@ -1,17 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { PROFILE } from "./content";
 
+import PreLoader from "./components/PreLoader";
 import Home from "./sections/Home";
 import Experience from "./sections/Experience";
 import Projects from "./sections/Projects";
 import Achievements from "./sections/Achievements";
 
 export default function App() {
+  // The page mounts after the spinner, so the hero reveal plays in view
+  // instead of finishing behind it.
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Older builds linked to #/projects-style routes and to sections that no
   // longer exist. Rewrite the first to a real anchor, drop the second so
   // shared links land cleanly on top.
   useEffect(() => {
+    if (loading) return;
     const { hash } = window.location;
     const id = hash.replace(/^#\/?/, "");
     if (!id) return;
@@ -20,8 +30,13 @@ export default function App() {
       window.history.replaceState(null, "", window.location.pathname);
     } else if (hash.startsWith("#/")) {
       window.location.replace(`#${id}`);
+    } else {
+      // The section mounted after the browser tried to jump to it.
+      document.getElementById(id).scrollIntoView();
     }
-  }, []);
+  }, [loading]);
+
+  if (loading) return <PreLoader />;
 
   return (
     <>
