@@ -63,7 +63,7 @@ function Row({ item, current, delay, onActivate }) {
           height={item.imageH}
           loading="lazy"
           decoding="async"
-          className="bg-surface mt-6 aspect-[16/10] w-full rounded-[4px] object-cover object-top xl:pointer-fine:hidden"
+          className="bg-surface mt-6 h-auto w-full rounded-[4px] xl:pointer-fine:hidden"
         />
       )}
       {item.repo ? (
@@ -81,6 +81,8 @@ function Row({ item, current, delay, onActivate }) {
  * A ledger on the left; on xl with a mouse, a sticky preview on the right
  * crossfades to whichever row is hovered or focused. Below xl, or on touch
  * screens that cannot hover, each screenshot sits inline above its row.
+ * Screenshots are never cropped: inline they keep their own ratio, in the
+ * preview they are fitted whole.
  */
 export default function Projects() {
   const [activeId, setActiveId] = useState(PROJECTS[0].id);
@@ -115,7 +117,7 @@ export default function Projects() {
         >
           {/* Every preview is stacked in one cell; only the active one is
               visible, so switching is a crossfade rather than a swap. */}
-          <div className="bg-surface/70 relative grid aspect-[16/10] w-full max-w-[34rem] place-items-center overflow-hidden rounded-[4px] border border-white/5">
+          <div className="bg-surface/70 relative grid aspect-[16/9] w-full max-w-[34rem] place-items-center overflow-hidden rounded-[4px] border border-white/5">
             {PROJECTS.map((p) => {
               const on = p.id === activeId;
               return p.image ? (
@@ -125,7 +127,7 @@ export default function Projects() {
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className={`absolute inset-0 h-full w-full object-cover object-top transition-[opacity,transform] duration-700 ease-out ${
+                  className={`absolute inset-0 h-full w-full object-contain transition-[opacity,transform] duration-700 ease-out ${
                     on ? "scale-100 opacity-100" : "scale-[1.02] opacity-0"
                   }`}
                 />

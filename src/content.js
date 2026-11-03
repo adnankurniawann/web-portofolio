@@ -89,7 +89,7 @@ export const PROJECTS = [
     repo: "https://github.com/farrelathalla/IITrack",
     image: "/assets/proyek/iitrack.webp",
     imageW: 1200,
-    imageH: 577,
+    imageH: 675,
     imageAlt: "IITrack sign-in page for Inkubator IT, with the tagline Satu Sistem Kendali Penuh",
   },
   {
@@ -102,9 +102,9 @@ export const PROJECTS = [
     repo: "https://github.com/adnankurniawann/hujan-net",
     image: "/assets/proyek/hujannet.webp",
     imageW: 1200,
-    imageH: 570,
+    imageH: 675,
     imageAlt:
-      "HujanNet operations map: reconstructed rainfall over Puncak with microwave links, watershed status and a queue of pending alerts",
+      "HujanNet operations map: reconstructed rainfall over Puncak with microwave links, watershed status, an evacuation route and a queue of pending alerts",
   },
   {
     id: "pulihgo",
@@ -128,9 +128,9 @@ export const PROJECTS = [
     repo: "https://github.com/adnankurniawann/gacha-makan-ai",
     image: "/assets/proyek/gacha-makan.webp",
     imageW: 1200,
-    imageH: 609,
+    imageH: 721,
     imageAlt:
-      "Gacha Makan home screen: a single-tap warung picker for Jatinangor with spin and map entry points",
+      "Gacha Makan home screen: a single-tap warung picker for Jatinangor with spin, map, wallet and history",
   },
 ];
 
